@@ -1,0 +1,14 @@
+ros_inference:
+  object_detector:
+    net_type: YOLOV4_TINY
+    model_cfg: "/asset/yolov4-tiny.cfg"
+    model_weights: "/asset/yolov4-tiny.weights"
+    inference_precision: FP32
+    calibration_image_list_file_txt: "/asset/calibration_images.txt"
+    gpu_id: 0
+    detect_thresh: 0.3
+    nms_thresh: 0.5
+    min_width: 50
+    max_width: 1920
+    min_height: 50
+    max_height: 1920

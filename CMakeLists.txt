@@ -25,6 +25,7 @@ find_package(catkin REQUIRED COMPONENTS
     cv_bridge
     sensor_msgs
     message_generation
+    zetton_common
     )
 catkin_python_setup()
 catkin_package(
@@ -89,7 +90,6 @@ install(DIRECTORY config/
 install(DIRECTORY asset/
     DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/asset
     PATTERN ".svn" EXCLUDE)
-
 
 # tests
 # add_tests_in_dir(inference)

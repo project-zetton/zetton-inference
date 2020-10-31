@@ -1,0 +1,3 @@
+[submodule "external/yolo-tensorrt"]
+	path = external/yolo-tensorrt
+	url = git@github.com:corenel/yolo-tensorrt.git

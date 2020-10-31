@@ -1,4 +1,4 @@
-#include "ros_inference/detector/yolo_object_detector.h"
+#include "zetton_inference/detector/yolo_object_detector.h"
 
 #include <ros/package.h>
 
@@ -13,8 +13,8 @@ bool YoloObjectDetector::Init() {
   // get params
   auto nh_ = zetton::common::RosNodeHandler::Instance()->GetNh();
   XmlRpc::XmlRpcValue params;
-  GPARAM("/ros_inference/yolo_object_detector", params);
-  std::string package_path = ros::package::getPath("ros_inference");
+  GPARAM("/zetton_inference/yolo_object_detector", params);
+  std::string package_path = ros::package::getPath("zetton_inference");
 
   auto net_type = static_cast<std::string>(params["net_type"]);
   if (net_type == "YOLOV4") {

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.13)
 
-project(ros_inference)
+project(zetton_inference)
 
 # set compilation
 set(CMAKE_CXX_STANDARD 11)

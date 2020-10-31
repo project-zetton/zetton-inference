@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-    <name>ros_inference</name>
+    <name>zetton_inference</name>
     <version>1.0.0</version>
     <description>Deep learning inference nodes for ROS with support for both PC and Jetson devices.</description>
     <maintainer email="xxdsox@gmail.com">Yusu Pan</maintainer>

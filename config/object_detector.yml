@@ -1,4 +1,4 @@
-ros_inference:
+zetton_inference:
   object_detector:
     net_type: YOLOV4_TINY
     model_cfg: "/asset/yolov4-tiny.cfg"

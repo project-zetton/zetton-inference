@@ -91,8 +91,5 @@ install(DIRECTORY asset/
     DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/asset
     PATTERN ".svn" EXCLUDE)
 
-# tests
-# add_tests_in_dir(inference)
-
-# apps
-add_simple_apps()
+# examples
+add_simple_examples()

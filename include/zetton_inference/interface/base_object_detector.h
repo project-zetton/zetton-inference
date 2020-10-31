@@ -26,9 +26,9 @@ class BaseObjectDetector : public BaseInference {
   void Infer() override = 0;
   virtual bool Detect(const cv::Mat& frame, ObjectDetectionResults& result) = 0;
 
-  ZETTON_REGISTER_REGISTERER(BaseInference);
+  ZETTON_REGISTER_REGISTERER(BaseObjectDetector);
 #define ZETTON_REGISTER_OBJECT_DETECTOR(name) \
-  ZETTON_REGISTER_CLASS(BaseInference, name)
+  ZETTON_REGISTER_CLASS(BaseObjectDetector, name)
 };
 
 }  // namespace inference

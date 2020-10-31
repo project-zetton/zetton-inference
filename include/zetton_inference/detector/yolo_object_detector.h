@@ -1,8 +1,8 @@
 #pragma once
 
 #include "ros/ros.h"
-#include "zetton_inference/interface/base_object_detector.h"
 #include "yolo_trt/class_detector.h"
+#include "zetton_inference/interface/base_object_detector.h"
 
 namespace zetton {
 namespace inference {

@@ -136,5 +136,7 @@ void YoloObjectDetector::FilterResults(yolo_trt::BatchResult& results) {
   results.erase(end, results.end());
 }
 
+ZETTON_REGISTER_OBJECT_DETECTOR(YoloObjectDetector);
+
 }  // namespace inference
 }  // namespace zetton

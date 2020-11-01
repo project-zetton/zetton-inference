@@ -75,8 +75,6 @@ install(TARGETS yolo_trt
     LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
     RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
     )
-# catkin_install_python(PROGRAMS app/text_detection_node.py
-#     DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 install(DIRECTORY include/${PROJECT_NAME}/
     DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
     PATTERN ".svn" EXCLUDE
@@ -90,6 +88,13 @@ install(DIRECTORY config/
 install(DIRECTORY asset/
     DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/asset
     PATTERN ".svn" EXCLUDE)
+
+file(GLOB_RECURSE
+    python_excutables
+    ${PROJECT_SOURCE_DIR}/example/*.py
+    )
+catkin_install_python(PROGRAMS ${python_excutables}
+    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 # examples
 add_simple_examples()

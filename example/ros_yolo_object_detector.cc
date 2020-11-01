@@ -18,6 +18,7 @@ void signalHandler(int sig) {
 class RosYoloObjectDetector {
  private:
   inline void RosImageCallback(const sensor_msgs::ImageConstPtr& msg) {
+    // convert image msg to cv::Mat
     cv_bridge::CvImagePtr cv_ptr;
     try {
       cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
@@ -26,16 +27,13 @@ class RosYoloObjectDetector {
       return;
     }
 
-    // Run model
+    // do detection
     zetton::inference::ObjectDetectionResults results;
     detector_.Detect(cv_ptr->image, results);
 
-    // Output detection results
+    // print results
     for (const auto& result : results) {
-      ROS_INFO_STREAM(result.type
-                      << "@" << result.prob << ":" << result.bbox.tl().x << ","
-                      << result.bbox.tl().y << "," << result.bbox.br().x << ","
-                      << result.bbox.br().y);
+      ROS_INFO_STREAM(result);
     }
   }
 
@@ -49,13 +47,14 @@ class RosYoloObjectDetector {
  public:
   RosYoloObjectDetector(ros::NodeHandle* nh) : nh_(nh), it_(*nh_) {
     // load params
-    std::string image_topic_sub = "/zetto_inference/object_detection/results";
+    // hardcoded or using GPARAM
+    std::string image_topic_sub = "/camera/image";
 
-    // subscribe to input video feed and publish results
+    // subscribe to input video feed
     image_sub_ = it_.subscribe(image_topic_sub, 1,
                                &RosYoloObjectDetector::RosImageCallback, this);
 
-    // initialize estimator
+    // prepare yolo config
     yolo_trt::Config config_v4;
     std::string package_path = ros::package::getPath("zetton_inference");
     config_v4.net_type = yolo_trt::ModelType::YOLOV4;
@@ -63,6 +62,8 @@ class RosYoloObjectDetector {
     config_v4.file_model_weights = package_path + "/asset/yolov4.weights";
     config_v4.inference_precison = yolo_trt::Precision::FP32;
     config_v4.detect_thresh = 0.4;
+
+    // initialize detector
     detector_.Init(config_v4);
     detector_.SetWidthLimitation(50, 1920);
     detector_.SetHeightLimitation(50, 1920);

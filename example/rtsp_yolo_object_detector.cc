@@ -108,8 +108,10 @@ void RtspYoloObjectDetector::setHeightLimitation(float min_value,
 }
 
 int main(int argc, char** argv) {
+  // init ros
   ros::init(argc, argv, "example_rtsp_yolo_detector");
 
+  // prepare yolo config
   yolo_trt::Config config_v4;
   std::string package_path = ros::package::getPath("zetton_inference");
   config_v4.net_type = yolo_trt::ModelType::YOLOV4;
@@ -118,38 +120,38 @@ int main(int argc, char** argv) {
   config_v4.inference_precison = yolo_trt::Precision::FP32;
   config_v4.detect_thresh = 0.4;
 
+  // prepare stream url
   std::string rtsp_url =
       "rtsp://freja.hiof.no:1935/rtplive/_definst_/hessdalen02.stream";
   std::string local_file = package_path + "/asset/demo.mp4";
 
+  // init detector and streamer
   RtspYoloObjectDetector detector(rtsp_url, config_v4);
   detector.setProbThresh(0.4);
   detector.setWidthLimitation(50, 1920);
   detector.setHeightLimitation(50, 1920);
 
+  // start
+  ROS_INFO("Starting detection");
   while (detector.isOpened()) {
     cv::Mat frame;
     zetton::inference::ObjectDetectionResults results;
     if (!detector.isEmpty()) {
+      // read frame from stream and detect objects by detector
       detector.read(frame, results);
+      // print results
       for (const auto& result : results) {
-        ROS_INFO_STREAM(result.type << "@" << result.prob << ":"
-                                    << result.bbox);
+        ROS_INFO_STREAM(result);
       }
-
+      // show results in GUI
       if (SHOW_GUI) {
-        for (const auto& result : results) {
-          cv::rectangle(frame, result.bbox, cv::Scalar(255, 0, 0), 2);
-          std::stringstream stream;
-          stream << std::fixed << std::setprecision(2) << result.type << "@"
-                 << result.prob;
-          cv::putText(frame, stream.str(),
-                      cv::Point(result.bbox.x, result.bbox.y - 5), 0, 0.5,
-                      cv::Scalar(0, 0, 255), 2);
+        for (auto& result : results) {
+          result.Draw(frame);
         }
         cv::imshow("Results", frame);
         char key = cv::waitKey(10);
         if (key == 27) {
+          ROS_INFO("Stopping detection");
           break;
         }
       }

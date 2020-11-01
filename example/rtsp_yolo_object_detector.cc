@@ -11,6 +11,8 @@
 #include "zetton_common/stream/gst_rtsp_stream.h"
 #include "zetton_inference/detector/yolo_object_detector.h"
 
+#define SHOW_GUI false
+
 class RtspYoloObjectDetector {
  public:
   RtspYoloObjectDetector(std::string url, yolo_trt::Config config);
@@ -64,7 +66,7 @@ bool RtspYoloObjectDetector::open() {
   detector_->Init(config_);
   // init streamer
   streamer_ = std::make_shared<zetton::common::GstRtspStream>();
-  streamer_->open(url_);
+  streamer_->open(url_, "avdec_h264");
 
   thread_ = std::make_shared<std::thread>([&]() {
     while (!stop_flag_) {
@@ -117,10 +119,10 @@ int main(int argc, char** argv) {
   config_v4.detect_thresh = 0.4;
 
   std::string rtsp_url =
-      "rtsp://admin:csc101abc@192.168.6.64:554/h264/ch1/main/av_stream";
-  std::string local_file = "../asset/demo.mp4";
+      "rtsp://freja.hiof.no:1935/rtplive/_definst_/hessdalen02.stream";
+  std::string local_file = package_path + "/asset/demo.mp4";
 
-  RtspYoloObjectDetector detector(local_file, config_v4);
+  RtspYoloObjectDetector detector(rtsp_url, config_v4);
   detector.setProbThresh(0.4);
   detector.setWidthLimitation(50, 1920);
   detector.setHeightLimitation(50, 1920);
@@ -131,20 +133,25 @@ int main(int argc, char** argv) {
     if (!detector.isEmpty()) {
       detector.read(frame, results);
       for (const auto& result : results) {
-        std::cout << "id:" << result.type << " prob:" << result.prob
-                  << " rect:" << result.bbox << std::endl;
-        cv::rectangle(frame, result.bbox, cv::Scalar(255, 0, 0), 2);
-        std::stringstream stream;
-        stream << std::fixed << std::setprecision(2) << "id:" << result.type
-               << "  score:" << result.prob;
-        cv::putText(frame, stream.str(),
-                    cv::Point(result.bbox.x, result.bbox.y - 5), 0, 0.5,
-                    cv::Scalar(0, 0, 255), 2);
+        ROS_INFO_STREAM(result.type << "@" << result.prob << ":"
+                                    << result.bbox);
       }
-      cv::imshow("Results", frame);
-      char key = cv::waitKey(10);
-      if (key == 27) {
-        break;
+
+      if (SHOW_GUI) {
+        for (const auto& result : results) {
+          cv::rectangle(frame, result.bbox, cv::Scalar(255, 0, 0), 2);
+          std::stringstream stream;
+          stream << std::fixed << std::setprecision(2) << result.type << "@"
+                 << result.prob;
+          cv::putText(frame, stream.str(),
+                      cv::Point(result.bbox.x, result.bbox.y - 5), 0, 0.5,
+                      cv::Scalar(0, 0, 255), 2);
+        }
+        cv::imshow("Results", frame);
+        char key = cv::waitKey(10);
+        if (key == 27) {
+          break;
+        }
       }
     }
   }

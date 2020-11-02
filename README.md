@@ -37,3 +37,8 @@ Object detection powered by YOLO-family algorithms.
    ```bash
    rosrun zetton_inference example_rtsp_yolo_object_detector
    ```
+
+## License
+
+- For academic use, this project is licensed under the 2-clause BSD License - see the [LICENSE file](LICENSE) for details.
+- For commercial use, please contact [Yusu Pan](mailto:xxdsox@gmail.com).

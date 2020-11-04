@@ -8,7 +8,7 @@
 #include "opencv2/opencv.hpp"
 #include "ros/package.h"
 #include "ros/ros.h"
-#include "zetton_common/stream/gst_rtsp_stream.h"
+#include "zetton_common/stream/cv_gst_stream_source.h"
 #include "zetton_inference/detector/yolo_object_detector.h"
 
 #define SHOW_GUI false
@@ -17,26 +17,27 @@ class RtspYoloObjectDetector {
  public:
   RtspYoloObjectDetector(std::string url, yolo_trt::Config config);
 
-  bool open();
-  bool isOpened();
-  void release();
-  bool read(cv::Mat& frame, zetton::inference::ObjectDetectionResults& result);
-  bool isEmpty();
+  bool Open();
+  bool IsOpened();
+  void Close();
+  bool Capture(cv::Mat& frame,
+               zetton::inference::ObjectDetectionResults& result);
+  bool IsEmpty();
 
-  void setProbThresh(float m_prob_thresh);
-  void setWidthLimitation(float min_value, float max_value);
-  void setHeightLimitation(float min_value, float max_value);
+  void SetProbThresh(float m_prob_thresh);
+  void SetWidthLimitation(float min_value, float max_value);
+  void SetHeightLimitation(float min_value, float max_value);
 
  private:
-  void process();
+  void Process();
 
   yolo_trt::Config config_;
   std::string url_;
 
   std::shared_ptr<zetton::inference::YoloObjectDetector> detector_;
-  std::shared_ptr<zetton::common::GstRtspStream> streamer_;
+  std::shared_ptr<zetton::common::CvGstStreamSource> streamer_;
 
-  bool stop_flag_ = false;
+  std::atomic<bool> stop_flag_{false};
   std::shared_ptr<std::thread> thread_;
 
   std::mutex mutex_;
@@ -47,41 +48,43 @@ class RtspYoloObjectDetector {
 RtspYoloObjectDetector::RtspYoloObjectDetector(std::string url,
                                                yolo_trt::Config config)
     : config_(std::move(config)), url_(std::move(url)) {
-  open();
+  Open();
 }
 
-void RtspYoloObjectDetector::process() {
-  cv::Mat frame;
-  if (streamer_->read(frame)) {
-    zetton::inference::ObjectDetectionResults results;
-    detector_->Detect(frame, results);
-    std::lock_guard<std::mutex> lock(mutex_);
-    queue_.push(std::make_pair(frame, results));
+void RtspYoloObjectDetector::Process() {
+  while (!stop_flag_) {
+    cv::Mat frame;
+    if (streamer_->Capture(frame)) {
+      zetton::inference::ObjectDetectionResults results;
+      detector_->Detect(frame, results);
+      std::lock_guard<std::mutex> lock(mutex_);
+      queue_.push(std::make_pair(frame, results));
+    }
   }
 }
 
-bool RtspYoloObjectDetector::open() {
+bool RtspYoloObjectDetector::Open() {
   // init detector
   detector_ = std::make_shared<zetton::inference::YoloObjectDetector>();
   detector_->Init(config_);
   // init streamer
-  streamer_ = std::make_shared<zetton::common::GstRtspStream>();
-  streamer_->open(url_, "avdec_h264");
+  zetton::common::StreamOptions options;
+  options.resource = url_;
+  options.codec = zetton::common::StreamCodec::CODEC_H264;
+  options.platform = zetton::common::StreamPlatformType::PLATFORM_CPU;
+  streamer_ = std::make_shared<zetton::common::CvGstStreamSource>();
+  streamer_->Init(options);
 
-  thread_ = std::make_shared<std::thread>([&]() {
-    while (!stop_flag_) {
-      process();
-    }
-  });
+  thread_ = std::make_shared<std::thread>([&]() { Process(); });
 
   return true;
 }
 
-bool RtspYoloObjectDetector::isOpened() { return streamer_->isOpened(); }
+bool RtspYoloObjectDetector::IsOpened() { return streamer_->IsStreaming(); }
 
-void RtspYoloObjectDetector::release() { stop_flag_ = true; }
+void RtspYoloObjectDetector::Close() { stop_flag_ = true; }
 
-bool RtspYoloObjectDetector::read(
+bool RtspYoloObjectDetector::Capture(
     cv::Mat& frame, zetton::inference::ObjectDetectionResults& result) {
   std::lock_guard<std::mutex> lock(mutex_);
   auto pair = queue_.front();
@@ -91,18 +94,18 @@ bool RtspYoloObjectDetector::read(
   return true;
 }
 
-bool RtspYoloObjectDetector::isEmpty() { return queue_.empty(); }
+bool RtspYoloObjectDetector::IsEmpty() { return queue_.empty(); }
 
-void RtspYoloObjectDetector::setProbThresh(float m_prob_thresh) {
+void RtspYoloObjectDetector::SetProbThresh(float m_prob_thresh) {
   detector_->SetProbThresh(m_prob_thresh);
 }
 
-void RtspYoloObjectDetector::setWidthLimitation(float min_value,
+void RtspYoloObjectDetector::SetWidthLimitation(float min_value,
                                                 float max_value) {
   detector_->SetWidthLimitation(min_value, max_value);
 }
 
-void RtspYoloObjectDetector::setHeightLimitation(float min_value,
+void RtspYoloObjectDetector::SetHeightLimitation(float min_value,
                                                  float max_value) {
   detector_->SetHeightLimitation(min_value, max_value);
 }
@@ -127,18 +130,18 @@ int main(int argc, char** argv) {
 
   // init detector and streamer
   RtspYoloObjectDetector detector(rtsp_url, config_v4);
-  detector.setProbThresh(0.4);
-  detector.setWidthLimitation(50, 1920);
-  detector.setHeightLimitation(50, 1920);
+  detector.SetProbThresh(0.4);
+  detector.SetWidthLimitation(50, 1920);
+  detector.SetHeightLimitation(50, 1920);
 
   // start
   ROS_INFO("Starting detection");
-  while (detector.isOpened()) {
+  while (detector.IsOpened()) {
     cv::Mat frame;
     zetton::inference::ObjectDetectionResults results;
-    if (!detector.isEmpty()) {
+    if (!detector.IsEmpty()) {
       // read frame from stream and detect objects by detector
-      detector.read(frame, results);
+      detector.Capture(frame, results);
       // print results
       for (const auto& result : results) {
         ROS_INFO_STREAM(result);

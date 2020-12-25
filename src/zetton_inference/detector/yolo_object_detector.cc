@@ -9,12 +9,13 @@
 namespace zetton {
 namespace inference {
 
-bool YoloObjectDetector::Init() {
+bool YoloObjectDetector::Init(const std::string& param_uri,
+                              const std::string& package_name) {
   // get params
   auto nh_ = zetton::common::RosNodeHandler::Instance()->GetNh();
   XmlRpc::XmlRpcValue params;
-  GPARAM("/zetton_inference/yolo_object_detector", params);
-  std::string package_path = ros::package::getPath("zetton_inference");
+  GPARAM(param_uri, params);
+  std::string package_path = ros::package::getPath(package_name);
 
   auto net_type = static_cast<std::string>(params["net_type"]);
   if (net_type == "YOLOV4") {
@@ -59,6 +60,10 @@ bool YoloObjectDetector::Init() {
   detector_->init(config_);
 
   return true;
+}
+
+bool YoloObjectDetector::Init() {
+  return Init("/zetton_inference/yolo_object_detector", "zetton_inference");
 }
 
 bool YoloObjectDetector::Init(const yolo_trt::Config& config) {

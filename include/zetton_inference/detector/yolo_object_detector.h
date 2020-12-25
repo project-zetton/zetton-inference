@@ -13,6 +13,7 @@ class YoloObjectDetector : public BaseObjectDetector {
   ~YoloObjectDetector() override = default;
 
   bool Init() override;
+  bool Init(const std::string& param_uri, const std::string& package_name);
   bool Init(const yolo_trt::Config& config);
 
   void Infer() override {}

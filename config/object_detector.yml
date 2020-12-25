@@ -1,5 +1,5 @@
 zetton_inference:
-  object_detector:
+  yolo_object_detector:
     net_type: YOLOV4_TINY
     model_cfg: "/asset/yolov4-tiny.cfg"
     model_weights: "/asset/yolov4-tiny.weights"

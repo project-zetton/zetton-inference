@@ -60,7 +60,7 @@ class RosYoloObjectDetector {
     config_v4.net_type = yolo_trt::ModelType::YOLOV4;
     config_v4.file_model_cfg = package_path + "/asset/yolov4.cfg";
     config_v4.file_model_weights = package_path + "/asset/yolov4.weights";
-    config_v4.inference_precison = yolo_trt::Precision::FP32;
+    config_v4.inference_precision = yolo_trt::Precision::FP32;
     config_v4.detect_thresh = 0.4;
 
     // initialize detector

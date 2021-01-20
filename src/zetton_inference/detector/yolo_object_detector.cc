@@ -28,11 +28,11 @@ bool YoloObjectDetector::Init(const std::string& param_uri,
   }
   auto precision = static_cast<std::string>(params["inference_precision"]);
   if (precision == "FP32") {
-    config_.inference_precison = yolo_trt::Precision::FP32;
+    config_.inference_precision = yolo_trt::Precision::FP32;
   } else if (precision == "FP16") {
-    config_.inference_precison = yolo_trt::Precision::FP16;
+    config_.inference_precision = yolo_trt::Precision::FP16;
   } else if (precision == "INT8") {
-    config_.inference_precison = yolo_trt::Precision::INT8;
+    config_.inference_precision = yolo_trt::Precision::INT8;
     config_.calibration_image_list_file_txt =
         package_path +
         static_cast<std::string>(params["calibration_image_list_file_txt"]);

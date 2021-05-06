@@ -14,6 +14,7 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/util.cmake)
 
 # find dependencies
 find_package(Threads)
+find_package(Eigen3 REQUIRED)
 find_package(OpenCV 4 REQUIRED)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/yolo-tensorrt)
 
@@ -41,6 +42,7 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/external/yolo-tensorrt/include
     ${catkin_INCLUDE_DIRS}
     ${OpenCV_INCLUDE_DIRS}
+    ${EIGEN3_INCLUDE_DIR}
 )
 
 # find all source files
@@ -61,6 +63,7 @@ target_link_libraries(
     ${catkin_LIBRARIES}
     ${OpenCV_LIBS}
     Threads::Threads
+    Eigen3::Eigen
     yolo_trt
 )
 

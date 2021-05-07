@@ -9,15 +9,15 @@ inline float cal_reid_score(const Eigen::VectorXf &query,
 }
 
 LocalObject::LocalObject(const int id_init, const cv::Rect2d &bbox_init,
-                         const Eigen::VectorXf &feat,
                          const KalmanFilterParam &kf_param_init,
-                         const ros::Time &time_now, const cv::Mat &image)
+                         const ros::Time &time_now, const Eigen::VectorXf &feat,
+                         const cv::Mat &image)
     : id(id_init),
       bbox(bbox_init),
       features({feat}),
       features_now(feat),
-      bbox_last_update_time(time_now),
-      example_image(image) {
+      example_image(image),
+      bbox_last_update_time(time_now) {
   // init kalman filters
   kf = new KalmanFilter(kf_param_init);
   std::cout << bbox_init << std::endl;

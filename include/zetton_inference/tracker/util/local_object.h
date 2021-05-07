@@ -9,6 +9,7 @@
 #include <opencv2/opencv.hpp>
 
 #include "zetton_inference/tracker/util/kalman_filter.h"
+#include "zetton_inference/tracker/util/timer.h"
 #include "zetton_inference/tracker/util/util.h"
 
 namespace zetton {
@@ -17,9 +18,9 @@ namespace tracker {
 class LocalObject {
  public:
   LocalObject(const int id_init, const cv::Rect2d &bbox_init,
-              const Eigen::VectorXf &feat,
               const KalmanFilterParam &kf_param_init, const ros::Time &time_now,
-              const cv::Mat &example_image);
+              const Eigen::VectorXf &feat = {},
+              const cv::Mat &example_image = {});
 
   // update bbox by optical flow
   void track_bbox_by_optical_flow(const ros::Time &time_now);
@@ -61,6 +62,10 @@ class LocalObject {
   ros::Time bbox_last_update_time;
   ros::Time ros_time_pc_last;
   bool is_overlap = false;
+
+  // control the time interval between adding two image blocks into this local
+  // object database
+  tracker::Timer database_update_timer;
 
   std::vector<cv::Point2f> keypoints_pre, keypoints_curr;
   cv::Rect2d bbox_measurement;

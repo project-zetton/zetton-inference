@@ -37,7 +37,7 @@ class OpticalFlow {
   OpticalFlow() = default;
   OpticalFlow(const OpticalFlowParam &optical_flow_param)
       : optical_flow_param_(optical_flow_param) {}
-  void update(const cv::Mat &frame_curr,
+  bool update(const cv::Mat &frame_curr,
               std::vector<LocalObject> &local_objects);
 
  private:
@@ -63,6 +63,7 @@ class OpticalFlow {
   cv::Mat H_motion;
 
   bool is_motion_estimation_succeeed = false;
+  bool is_camera_motion_estimated = false;
 };
 
 }  // namespace tracker

@@ -4,8 +4,9 @@ namespace zetton {
 namespace inference {
 namespace tracker {
 
-void OpticalFlow::update(const cv::Mat &frame_curr_bgr,
+bool OpticalFlow::update(const cv::Mat &frame_curr_bgr,
                          std::vector<LocalObject> &local_objects) {
+  // preprocess frame
   cv::Mat frame_curr;
   if (optical_flow_param_.use_resize) {
     cv::resize(frame_curr_bgr, frame_curr, cv::Size(),
@@ -16,16 +17,16 @@ void OpticalFlow::update(const cv::Mat &frame_curr_bgr,
     cv::cvtColor(frame_curr_bgr, frame_curr, cv::COLOR_BGR2GRAY);
   }
 
-  // add first frame
+  // initialize with frame
   if (frame_pre_.empty() || local_objects.empty()) {
     frame_pre_ = frame_curr;
     for (auto &lo : local_objects) {
       lo.is_track_succeed = false;
     }
-    return;
+    return true;
   }
 
-  // detect enought keypoints for each tracking object,
+  // detect enough keypoints for each tracking object,
   // and forms a keypoints vector that conatins all the keypoints
   std::vector<cv::Point2f> keypoints_pre_all, keypoints_curr_all;
   detect_enough_keypoints(local_objects, keypoints_pre_all);
@@ -34,6 +35,7 @@ void OpticalFlow::update(const cv::Mat &frame_curr_bgr,
   std::vector<uchar> status;  // tracking succeed or not
   std::vector<float> errors;  // tracking error
   if (!keypoints_pre_all.empty()) {
+    // match features using optical flow
     cv::calcOpticalFlowPyrLK(frame_pre_, frame_curr, keypoints_pre_all,
                              keypoints_curr_all, status, errors);
     // for (int i = 0; i < keypoints_curr_all.size(); i++)
@@ -48,8 +50,10 @@ void OpticalFlow::update(const cv::Mat &frame_curr_bgr,
     // remove the keypoints that fails to track,
     // and update the current keypoints of the local object
     update_local_objects_curr_kp(local_objects, keypoints_curr_all, status);
+
     // calculate the transform matrix and remove the outliers
     calculate_measurement(local_objects);
+
     // update variable
     frame_pre_ = frame_curr;
     for (auto &lo : local_objects) {
@@ -60,8 +64,9 @@ void OpticalFlow::update(const cv::Mat &frame_curr_bgr,
     for (auto &lo : local_objects) {
       lo.is_track_succeed = false;
     }
-    return;
   }
+
+  return is_camera_motion_estimated;
 }
 
 void OpticalFlow::detect_enough_keypoints(
@@ -157,9 +162,11 @@ void OpticalFlow::camera_motion_compensate(
     if (H_motion.empty()) {
       std::cout << "Estimate homography matrix fails..." << std::endl;
       is_motion_estimation_succeeed = false;
+      is_camera_motion_estimated = false;
       return;
     } else {  // estimate succeed
       is_motion_estimation_succeeed = true;
+      is_camera_motion_estimated = true;
       // get transformed bbox
       // std::cout << "Motion compensation matrix" << H_motion << std::endl;
 

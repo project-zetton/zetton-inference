@@ -1,0 +1,14 @@
+<launch>
+    <node pkg="zetton_inference"
+          name="example_ros_mot_tracker"
+          type="example_ros_mot_tracker"
+          output="screen"
+          respawn="false"
+          required="true"
+          cwd="node"
+          args=""
+          >
+    </node>
+    <rosparam command="load" file="$(find zetton_inference)/config/object_detector.yml"/>
+    <rosparam command="load" file="$(find zetton_inference)/config/object_tracker.yml"/>
+</launch>

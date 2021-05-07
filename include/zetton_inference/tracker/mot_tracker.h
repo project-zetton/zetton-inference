@@ -29,9 +29,7 @@ class MotTracker : public BaseObjectTracker {
              const ObjectDetectionResults &detections,
              const std::vector<float> embeddings);
 
-  const std::vector<tracker::LocalObject> &tracks() {
-    return local_objects_list;
-  };
+  std::vector<tracker::LocalObject> &tracks() { return local_objects_list; };
 
  private:
   void ComputeFlow(const cv::Mat &frame);

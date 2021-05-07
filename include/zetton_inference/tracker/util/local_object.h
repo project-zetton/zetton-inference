@@ -38,6 +38,20 @@ class LocalObject {
   void update_feat(const Eigen::VectorXf &feature_new,
                    float smooth_ratio = 0.7);
 
+  inline void Draw(cv::Mat &frame) {
+    cv::rectangle(frame, bbox, color, 2);
+    std::stringstream stream;
+    stream << "Track " << id;
+    cv::putText(frame, stream.str(), cv::Point(bbox.x, bbox.y - 5), 0, 0.5,
+                color, 2);
+  }
+
+  inline friend std::ostream &operator<<(std::ostream &os,
+                                         const LocalObject &track) {
+    os << track.id << ":" << track.bbox;
+    return os;
+  }
+
   int id;
   bool is_opt_enable = true;
   cv::Rect2d bbox;

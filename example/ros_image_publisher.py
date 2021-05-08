@@ -54,6 +54,7 @@ class PublisherNode:
                 ret, self.image = self.source.read()
                 if not ret:
                     self.source.set(cv2.CAP_PROP_POS_FRAMES, 0)
+                    print('shift back to the begining')
 
     def publish(self):
         try:
@@ -65,7 +66,7 @@ class PublisherNode:
 
     def start(self):
         while not rospy.is_shutdown():
-            rospy.loginfo('publishing image')
+            # rospy.loginfo('publishing image')
             if self.image is not None:
                 self.publish()
             self.loop_rate.sleep()

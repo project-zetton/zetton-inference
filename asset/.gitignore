@@ -1,3 +1,5 @@
 *.weights
 *.engine
 *.pth
+*.cfg
+*.mp4

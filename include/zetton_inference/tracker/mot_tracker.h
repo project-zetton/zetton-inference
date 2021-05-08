@@ -4,11 +4,11 @@
 
 #include "zetton_inference/interface/base_object_detector.h"
 #include "zetton_inference/interface/base_object_tracker.h"
-#include "zetton_inference/tracker/util/association_type.h"
-#include "zetton_inference/tracker/util/kalman_filter.h"
-#include "zetton_inference/tracker/util/local_object.h"
-#include "zetton_inference/tracker/util/optical_flow.h"
-#include "zetton_inference/tracker/util/util.h"
+#include "zetton_inference/tracker/mot/association_type.h"
+#include "zetton_inference/tracker/mot/kalman_filter.h"
+#include "zetton_inference/tracker/mot/local_object.h"
+#include "zetton_inference/tracker/mot/optical_flow.h"
+#include "zetton_inference/tracker/mot/util.h"
 
 namespace zetton {
 namespace inference {

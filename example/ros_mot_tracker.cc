@@ -1,18 +1,19 @@
 #include <cv_bridge/cv_bridge.h>
 #include <image_transport/image_transport.h>
+#include <image_transport/publisher.h>
 #include <ros/package.h>
 #include <ros/ros.h>
+#include <ros/time.h>
 #include <sensor_msgs/image_encodings.h>
 
 #include <csignal>
 #include <opencv2/opencv.hpp>
 #include <string>
 
-#include "image_transport/publisher.h"
-#include "ros/time.h"
 #include "zetton_common/util/ros_util.h"
 #include "zetton_inference/detector/yolo_object_detector.h"
 #include "zetton_inference/tracker/mot_tracker.h"
+#include "zetton_inference/tracker/sort_tracker.h"
 
 void signalHandler(int sig) {
   ROS_WARN("Trying to exit!");
@@ -46,10 +47,10 @@ class RosMotTracker {
     }
     ROS_INFO("Trackings:");
     for (auto& track : tracker_.tracks()) {
-      if (track.tracking_fail_count <= 3) {
-        ROS_INFO_STREAM(track);
-        track.Draw(cv_ptr->image);
-      }
+      // if (track.tracking_fail_count <= 3) {
+      ROS_INFO_STREAM(track);
+      track.Draw(cv_ptr->image);
+      // }
     }
 
     // publish results
@@ -66,13 +67,15 @@ class RosMotTracker {
   image_transport::Publisher image_pub_;
 
   zetton::inference::YoloObjectDetector detector_;
-  zetton::inference::MotTracker tracker_;
+  // zetton::inference::MotTracker tracker_;
+  zetton::inference::SortTracker tracker_;
 
  public:
   RosMotTracker(ros::NodeHandle* nh) : nh_(nh), it_(*nh_) {
     // load params
     // hardcoded or using GPARAM
-    std::string image_topic_sub = "/uvds_communication/image_streaming/mavic_0";
+    // std::string image_topic_sub = "/uvds_communication/image_streaming/mavic_0";
+    std::string image_topic_sub = "/camera/image";
 
     // subscribe to input video feed
     image_sub_ = it_.subscribe(image_topic_sub, 1,
@@ -83,9 +86,18 @@ class RosMotTracker {
     // prepare yolo config
     yolo_trt::Config config_v4;
     std::string package_path = ros::package::getPath("zetton_inference");
+    // config_v4.net_type = yolo_trt::ModelType::YOLOV4_TINY;
+    // config_v4.file_model_cfg = package_path + "/asset/yolov4-tiny-uav.cfg";
+    // config_v4.file_model_weights =
+    //     package_path + "/asset/yolov4-tiny-uav_best.weights";
+    // config_v4.net_type = yolo_trt::ModelType::YOLOV4;
+    // config_v4.file_model_cfg = package_path + "/asset/yolov4-608.cfg";
+    // config_v4.file_model_weights =
+    //     package_path + "/asset/yolov4-608.weights";
     config_v4.net_type = yolo_trt::ModelType::YOLOV4;
-    config_v4.file_model_cfg = package_path + "/asset/yolov4-tiny-uav.cfg";
-    config_v4.file_model_weights = package_path + "/asset/yolov4-tiny-uav_best.weights";
+    config_v4.file_model_cfg = package_path + "/asset/yolov4-visdrone.cfg";
+    config_v4.file_model_weights =
+        package_path + "/asset/yolov4-visdrone-best.weights";
     config_v4.inference_precision = yolo_trt::Precision::FP32;
     config_v4.detect_thresh = 0.4;
 

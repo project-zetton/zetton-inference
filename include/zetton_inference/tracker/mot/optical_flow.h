@@ -4,7 +4,7 @@
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 
-#include "zetton_inference/tracker/util/local_object.h"
+#include "zetton_inference/tracker/mot/local_object.h"
 
 namespace zetton {
 namespace inference {

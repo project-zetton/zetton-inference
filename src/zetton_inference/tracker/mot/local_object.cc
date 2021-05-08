@@ -1,8 +1,9 @@
-#include "zetton_inference/tracker/util/local_object.h"
+#include "zetton_inference/tracker/mot/local_object.h"
 
 namespace zetton {
 namespace inference {
 namespace tracker {
+
 inline float cal_reid_score(const Eigen::VectorXf &query,
                             const Eigen::VectorXf &gallery) {
   return (query - gallery).squaredNorm();

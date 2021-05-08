@@ -8,9 +8,9 @@
 #include <Eigen/Dense>
 #include <opencv2/opencv.hpp>
 
-#include "zetton_inference/tracker/util/kalman_filter.h"
-#include "zetton_inference/tracker/util/timer.h"
-#include "zetton_inference/tracker/util/util.h"
+#include "zetton_inference/tracker/mot/kalman_filter.h"
+#include "zetton_inference/tracker/mot/timer.h"
+#include "zetton_inference/tracker/mot/util.h"
 
 namespace zetton {
 namespace inference {

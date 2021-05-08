@@ -8,7 +8,7 @@
 // Both this code and the orignal code are published under the BSD license.
 // by Cong Ma, 2016
 
-#include "zetton_inference/tracker/util/hungarian.h"
+#include "zetton_inference/tracker/mot/hungarian.h"
 
 #include <cfloat>
 #include <cmath>

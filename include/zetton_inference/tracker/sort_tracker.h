@@ -9,6 +9,7 @@ namespace zetton {
 namespace inference {
 
 class SortTracker : public BaseObjectTracker {
+  // TODO move to BaseObjectTracker
   typedef struct TrackingBox {
     int frame;
     int id;
@@ -40,7 +41,7 @@ class SortTracker : public BaseObjectTracker {
   bool Track(const cv::Mat &frame, const ros::Time &timestamp,
              const ObjectDetectionResults &detections);
 
-  std::vector<TrackingBox> &tracks() { return frameTrackingResult; }
+  std::vector<TrackingBox> &tracks() { return tracking_results; }
 
  private:
   // Computes IOU between two bounding boxes
@@ -55,23 +56,24 @@ class SortTracker : public BaseObjectTracker {
 
  private:
   int frame_count_ = 0;
-  int max_age_ = 6;
-  int active_age = 2;
+  int max_age_ = 10;
+  int active_age = 3;
   int min_hits_ = 3;
-  double iouThreshold_ = 0.3;
+  double iou_threshold_ = 0.3;
   std::vector<tracker::sort::KalmanTracker> trackers_;
 
-  std::vector<cv::Rect_<float>> predictedBoxes;
-  std::vector<std::vector<double>> iouMatrix;
-  std::vector<int> assignment;
-  std::set<int> unmatchedDetections;
-  std::set<int> unmatchedTrajectories;
-  std::set<int> allItems;
-  std::set<int> matchedItems;
-  std::vector<cv::Point> matchedPairs;
-  std::vector<TrackingBox> frameTrackingResult;
-  unsigned int trkNum = 0;
-  unsigned int detNum = 0;
+  std::vector<cv::Rect_<float>> predicted_boxes;
+  std::vector<std::vector<double>> iou_matrix;
+  std::vector<int> assignments;
+  std::set<int> unmatched_detections;
+  std::set<int> unmatched_tracks;
+  std::set<int> all_items;
+  std::set<int> matched_items;
+  std::vector<cv::Point> matched_pairs;
+  std::vector<TrackingBox> tracking_results;
+
+  unsigned int num_tracks = 0;
+  unsigned int num_detections = 0;
 };
 
 }  // namespace inference

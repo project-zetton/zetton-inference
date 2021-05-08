@@ -38,6 +38,24 @@ Object detection powered by YOLO-family algorithms.
    rosrun zetton_inference example_rtsp_yolo_object_detector
    ```
 
+### Object Tracking
+
+#### SORT
+
+Object tracking powered by SORT algorithms.
+
+- Receive image form ROS topic, and then do detection & tracking:
+
+   ```bash
+   rosrun zetton_inference example_ros_mot_tracker
+   ```
+
+#### MOT
+
+Object tracking powered by Optical Flow & ReID.
+
+(W.I.P)
+
 ## License
 
 - For academic use, this project is licensed under the 2-clause BSD License - see the [LICENSE file](LICENSE) for details.

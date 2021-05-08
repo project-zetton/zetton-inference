@@ -1,14 +1,14 @@
 zetton_inference:
   mot_tracker:
     tracker:
-      track_fail_timeout_tick: 30
+      track_fail_timeout_tick: 5
       bbox_overlap_ratio: 0.6
       detector_update_timeout_tick: 30
-      detector_bbox_padding: 80
+      detector_bbox_padding: 10
       reid_match_threshold: 3.0
       reid_match_bbox_dis: 80
       reid_match_bbox_size_diff: 80
-      stop_opt_timeout: 6
+      stop_opt_timeout: 2
 
     local_database:
       height_width_ratio_min: 0.85
@@ -30,14 +30,14 @@ zetton_inference:
       residual_threshold: 16
 
     optical_flow:
-      min_keypoints_to_track: 40
+      min_keypoints_to_track: 10
       keypoints_num_factor_area: 8000
-      corner_detector_max_num: 100
-      corner_detector_quality_level: 0.0001
-      corner_detector_min_distance: 3
+      corner_detector_max_num: 1000
+      corner_detector_quality_level: 0.06
+      corner_detector_min_distance: 1
       corner_detector_block_size: 3
-      corner_detector_use_harris: true
-      corner_detector_k: 0.03
+      corner_detector_use_harris: false
+      corner_detector_k: 0.04
       min_keypoints_to_cal_H_mat: 10
       min_keypoints_for_motion_estimation: 50
       min_pixel_dis_square_for_scene_point: 2

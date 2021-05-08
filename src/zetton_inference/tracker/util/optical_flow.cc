@@ -150,7 +150,7 @@ void OpticalFlow::camera_motion_compensate(
   // in tracking
   if (keypoints_vo_curr.size() <
       optical_flow_param_.min_keypoints_to_cal_H_mat) {
-    std::cout << "Too few points, estimate homography matrix fails..."
+    std::cout << "Too few points for estimating camera motion, estimate homography matrix fails..."
               << std::endl;
     is_motion_estimation_succeeed = false;
     keypoints_vo_curr.clear();
@@ -226,7 +226,7 @@ void OpticalFlow::calculate_measurement(
     // failure in tracking
     if (lo.keypoints_curr.size() <
         optical_flow_param_.min_keypoints_to_cal_H_mat) {
-      std::cout << "Too few points, estimate affine partial matrix fails..."
+      std::cout << "Too few point for calculating measurement, estimate affine partial matrix fails..."
                 << std::endl;
       lo.is_track_succeed = false;
       lo.keypoints_curr.clear();  // clear all the points

@@ -493,8 +493,8 @@ bool MotTracker::Track(const cv::Mat &frame, const ros::Time &timestamp,
   for (size_t i = 0; i < all_detected_bbox_ass_vec.size(); i++) {
     if (all_detected_bbox_ass_vec[i].ass_vector.empty()) {
       // this detected object is a new object
-      // ROS_INFO_STREAM(
-      //     "Adding Tracking Object with ID:" << local_id_not_assigned);
+      ROS_INFO_STREAM(
+          "Adding Tracking Object with ID:" << local_id_not_assigned);
       tracker::LocalObject new_object(local_id_not_assigned, detections[i].bbox,
                                       kf_param, timestamp);
       local_id_not_assigned++;
@@ -502,8 +502,8 @@ bool MotTracker::Track(const cv::Mat &frame, const ros::Time &timestamp,
     } else {
       // re-detect a previous tracking object
       int matched_id = all_detected_bbox_ass_vec[i].ass_vector[0].id;
-      // ROS_INFO_STREAM("Object " << local_objects_list[matched_id].id
-      //                           << " re-detected!");
+      ROS_INFO_STREAM("Object " << local_objects_list[matched_id].id
+                                << " re-detected!");
       local_objects_list[matched_id].track_bbox_by_detector(detections[i].bbox,
                                                             timestamp);
     }

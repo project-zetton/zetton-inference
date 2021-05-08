@@ -1,5 +1,8 @@
 #include "zetton_inference/tracker/sort_tracker.h"
 
+#include <algorithm>
+#include <opencv2/core/types.hpp>
+
 namespace zetton {
 namespace inference {
 
@@ -15,7 +18,7 @@ bool SortTracker::Track(const cv::Mat &frame, const ros::Time &timestamp,
   if (trackers_.empty()) {
     // initialize kalman trackers using first detections.
     for (unsigned int i = 0; i < detections.size(); i++) {
-      auto trk = tracker::sort::KalmanTracker(detections[i].bbox);
+      auto trk = tracker::sort::KalmanTracker(frame_count_, detections[i].bbox);
       trackers_.push_back(trk);
     }
     return true;
@@ -104,12 +107,36 @@ bool SortTracker::Track(const cv::Mat &frame, const ros::Time &timestamp,
     trkIdx = matched_pairs[i].x;
     detIdx = matched_pairs[i].y;
     trackers_[trkIdx].update(detections[detIdx].bbox);
+    updated_tracks.insert(trkIdx);
   }
 
   // create and initialise new trackers for unmatched detections
   for (auto umd : unmatched_detections) {
-    auto tracker = tracker::sort::KalmanTracker(detections[umd].bbox);
+    auto tracker =
+        tracker::sort::KalmanTracker(frame_count_, detections[umd].bbox);
     trackers_.push_back(tracker);
+    updated_tracks.insert(trackers_.size() - 1);
+  }
+
+  // remove duplicated tracks
+  duplicated_tracks.clear();
+  for (auto aged : unmatched_tracks) {
+    for (auto updated : updated_tracks) {
+      if (GetIOU(trackers_[aged].get_state(), trackers_[updated].get_state()) >=
+          0.3) {
+        if (trackers_[updated].m_start_frame <= trackers_[aged].m_start_frame) {
+          duplicated_tracks.push_back(aged);
+        } else {
+          duplicated_tracks.push_back(updated);
+        }
+      }
+    }
+  }
+  std::sort(duplicated_tracks.begin(), duplicated_tracks.end());
+  for (auto it = duplicated_tracks.rbegin(); it != duplicated_tracks.rend();
+       ++it) {
+    // ROS_INFO_STREAM("Remove duplicated track " << *it);
+    trackers_.erase(trackers_.begin() + *it);
   }
 
   // collect visible tracks

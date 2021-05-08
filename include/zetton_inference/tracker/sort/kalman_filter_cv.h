@@ -17,22 +17,24 @@ using namespace cv;
 // observed as bounding box.
 class KalmanTracker {
  public:
-  KalmanTracker() {
+  KalmanTracker(const int& frame_id) {
     init_kf(StateType());
     m_time_since_update = 0;
     m_hits = 0;
     m_hit_streak = 0;
     m_age = 0;
     m_id = kf_count;
+    m_start_frame = frame_id;
     // kf_count++;
   }
-  KalmanTracker(StateType initRect) {
+  KalmanTracker(const int& frame_id, StateType initRect) {
     init_kf(initRect);
     m_time_since_update = 0;
     m_hits = 0;
     m_hit_streak = 0;
     m_age = 0;
     m_id = kf_count;
+    m_start_frame = frame_id;
     kf_count++;
   }
 
@@ -51,6 +53,7 @@ class KalmanTracker {
   int m_hit_streak;
   int m_age;
   int m_id;
+  int m_start_frame;
 
  private:
   void init_kf(StateType stateMat);

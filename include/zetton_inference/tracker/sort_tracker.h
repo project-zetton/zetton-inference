@@ -60,6 +60,7 @@ class SortTracker : public BaseObjectTracker {
   int active_age = 3;
   int min_hits_ = 3;
   double iou_threshold_ = 0.3;
+  double duplicated_threshold_ = 0.8;
   std::vector<tracker::sort::KalmanTracker> trackers_;
 
   std::vector<cv::Rect_<float>> predicted_boxes;
@@ -70,6 +71,8 @@ class SortTracker : public BaseObjectTracker {
   std::set<int> all_items;
   std::set<int> matched_items;
   std::vector<cv::Point> matched_pairs;
+  std::set<int> updated_tracks;
+  std::vector<int> duplicated_tracks;
   std::vector<TrackingBox> tracking_results;
 
   unsigned int num_tracks = 0;

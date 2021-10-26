@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ros/ros.h"
 #include "zetton_inference/interface/base_object_detector.h"
 #include "zetton_inference/interface/base_object_tracker.h"
 #include "zetton_inference/tracker/sort/hungarian.h"

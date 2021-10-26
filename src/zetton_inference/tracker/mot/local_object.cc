@@ -41,7 +41,7 @@ void LocalObject::track_bbox_by_optical_flow(const ros::Time &time_now) {
     tracking_fail_count = 0;
   } else {
     tracking_fail_count++;
-    ROS_INFO_STREAM("Object " << id << " tracking failure detected!");
+    AINFO_F("Object {} tracking failure detected!", id);
   }
 
   // update the bbox last updated time

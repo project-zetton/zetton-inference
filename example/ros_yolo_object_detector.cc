@@ -11,7 +11,7 @@
 #include "zetton_inference/detector/yolo_object_detector.h"
 
 void signalHandler(int sig) {
-  ROS_WARN("Trying to exit!");
+  AWARN_F("Trying to exit!");
   ros::shutdown();
 }
 
@@ -23,7 +23,7 @@ class RosYoloObjectDetector {
     try {
       cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
     } catch (cv_bridge::Exception& e) {
-      ROS_ERROR("cv_bridge exception: %s", e.what());
+      AERROR_F("cv_bridge exception: {}", e.what());
       return;
     }
 
@@ -33,7 +33,7 @@ class RosYoloObjectDetector {
 
     // print results
     for (const auto& result : results) {
-      ROS_INFO_STREAM(result);
+      AINFO << result;
     }
   }
 

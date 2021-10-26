@@ -8,8 +8,8 @@
 #include "opencv2/opencv.hpp"
 #include "ros/package.h"
 #include "ros/ros.h"
-#include "zetton_common/stream/cv_gst_stream_source.h"
 #include "zetton_inference/detector/yolo_object_detector.h"
+#include "zetton_stream/stream/cv_gst_stream_source.h"
 
 #define SHOW_GUI false
 
@@ -35,7 +35,7 @@ class RtspYoloObjectDetector {
   std::string url_;
 
   std::shared_ptr<zetton::inference::YoloObjectDetector> detector_;
-  std::shared_ptr<zetton::common::CvGstStreamSource> streamer_;
+  std::shared_ptr<zetton::stream::CvGstStreamSource> streamer_;
 
   std::atomic<bool> stop_flag_{false};
   std::shared_ptr<std::thread> thread_;
@@ -68,11 +68,11 @@ bool RtspYoloObjectDetector::Open() {
   detector_ = std::make_shared<zetton::inference::YoloObjectDetector>();
   detector_->Init(config_);
   // init streamer
-  zetton::common::StreamOptions options;
+  zetton::stream::StreamOptions options;
   options.resource = url_;
-  options.codec = zetton::common::StreamCodec::CODEC_H264;
-  options.platform = zetton::common::StreamPlatformType::PLATFORM_CPU;
-  streamer_ = std::make_shared<zetton::common::CvGstStreamSource>();
+  options.codec = zetton::stream::StreamCodec::CODEC_H264;
+  options.platform = zetton::stream::StreamPlatformType::PLATFORM_CPU;
+  streamer_ = std::make_shared<zetton::stream::CvGstStreamSource>();
   streamer_->Init(options);
 
   thread_ = std::make_shared<std::thread>([&]() { Process(); });
@@ -135,7 +135,7 @@ int main(int argc, char** argv) {
   detector.SetHeightLimitation(50, 1920);
 
   // start
-  ROS_INFO("Starting detection");
+  AINFO_F("Starting detection");
   while (detector.IsOpened()) {
     cv::Mat frame;
     zetton::inference::ObjectDetectionResults results;
@@ -144,7 +144,7 @@ int main(int argc, char** argv) {
       detector.Capture(frame, results);
       // print results
       for (const auto& result : results) {
-        ROS_INFO_STREAM(result);
+        AINFO << result;
       }
       // show results in GUI
       if (SHOW_GUI) {
@@ -154,7 +154,7 @@ int main(int argc, char** argv) {
         cv::imshow("Results", frame);
         char key = cv::waitKey(10);
         if (key == 27) {
-          ROS_INFO("Stopping detection");
+          AINFO_F("Stopping detection");
           break;
         }
       }

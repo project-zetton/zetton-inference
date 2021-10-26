@@ -2,6 +2,7 @@
 
 #include <std_msgs/UInt16MultiArray.h>
 
+#include "zetton_common/util/log.h"
 #include "zetton_inference/interface/base_object_detector.h"
 #include "zetton_inference/interface/base_object_tracker.h"
 #include "zetton_inference/tracker/mot/association_type.h"

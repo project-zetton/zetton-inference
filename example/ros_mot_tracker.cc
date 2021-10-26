@@ -16,7 +16,7 @@
 #include "zetton_inference/tracker/sort_tracker.h"
 
 void signalHandler(int sig) {
-  ROS_WARN("Trying to exit!");
+  AWARN_F("Trying to exit!");
   ros::shutdown();
 }
 
@@ -28,7 +28,7 @@ class RosMotTracker {
     try {
       cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
     } catch (cv_bridge::Exception& e) {
-      ROS_ERROR("cv_bridge exception: %s", e.what());
+      AERROR_F("cv_bridge exception: {}", e.what());
       return;
     }
 
@@ -40,15 +40,15 @@ class RosMotTracker {
     tracker_.Track(cv_ptr->image, ros::Time::now(), detections);
 
     // print detections and tracks
-    ROS_INFO("Detections:");
+    AINFO_F("Detections:");
     for (auto& detection : detections) {
-      ROS_INFO_STREAM(detection);
+      AINFO << detection;
       detection.Draw(cv_ptr->image);
     }
-    ROS_INFO("Trackings:");
+    AINFO_F("Trackings:");
     for (auto& track : tracker_.tracks()) {
       // if (track.tracking_fail_count <= 3) {
-      ROS_INFO_STREAM(track);
+      AINFO << track;
       track.Draw(cv_ptr->image);
       // }
     }
@@ -57,7 +57,7 @@ class RosMotTracker {
     image_pub_.publish(
         cv_bridge::CvImage(std_msgs::Header(), "bgr8", cv_ptr->image)
             .toImageMsg());
-    ROS_INFO("---");
+    AINFO_F("---");
   }
 
   ros::NodeHandle* nh_;
@@ -74,7 +74,8 @@ class RosMotTracker {
   RosMotTracker(ros::NodeHandle* nh) : nh_(nh), it_(*nh_) {
     // load params
     // hardcoded or using GPARAM
-    // std::string image_topic_sub = "/uvds_communication/image_streaming/mavic_0";
+    // std::string image_topic_sub =
+    // "/uvds_communication/image_streaming/mavic_0";
     std::string image_topic_sub = "/camera/image";
 
     // subscribe to input video feed

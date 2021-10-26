@@ -2,6 +2,8 @@
 
 #include <ros/ros.h>
 
+#include "zetton_common/util/log.h"
+
 namespace zetton {
 namespace inference {
 namespace tracker {
@@ -50,10 +52,11 @@ class AssociationVector {
   }
 
   void report() {
-    ROS_INFO("Data Association Report:");
-    for (auto ass : ass_vector)
-      ROS_INFO_STREAM("id: " << ass.id << " | score: " << ass.score);
-    ROS_INFO(" ");
+    AINFO_F("Data Association Report:");
+    for (auto ass : ass_vector) {
+      AINFO_F("id: {} | score: {}", ass.id, ass.score);
+    }
+    AINFO_F(" ");
   }
 
   std::vector<AssociationType> ass_vector;

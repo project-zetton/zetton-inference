@@ -7,6 +7,8 @@
 #include <Eigen/Dense>
 #include <string>
 
+#include "zetton_common/util/log.h"
+
 namespace zetton {
 namespace inference {
 namespace tracker {
@@ -50,8 +52,7 @@ inline std::vector<Eigen::VectorXf> feature_vector_to_eigen(
 }
 
 inline void print_bbox(cv::Rect2d bbox) {
-  ROS_INFO_STREAM("Bbox Info: " << bbox.x << ", " << bbox.y << ", "
-                                << bbox.width << ", " << bbox.height);
+  AINFO_F("Bbox Info: {},{},{},{}", bbox.x, bbox.y, bbox.width, bbox.height);
 }
 
 inline double cal_bbox_overlap_ratio(cv::Rect2d track_bbox,

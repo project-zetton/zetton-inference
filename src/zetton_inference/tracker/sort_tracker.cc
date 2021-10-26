@@ -135,7 +135,7 @@ bool SortTracker::Track(const cv::Mat &frame, const ros::Time &timestamp,
   std::sort(duplicated_tracks.begin(), duplicated_tracks.end());
   for (auto it = duplicated_tracks.rbegin(); it != duplicated_tracks.rend();
        ++it) {
-    // ROS_INFO_STREAM("Remove duplicated track " << *it);
+    // AINFO_F("Remove duplicated track {}", *it);
     trackers_.erase(trackers_.begin() + *it);
   }
 

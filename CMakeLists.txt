@@ -28,6 +28,7 @@ find_package(catkin REQUIRED COMPONENTS
     sensor_msgs
     message_generation
     zetton_common
+    zetton_stream
     )
 catkin_python_setup()
 catkin_package(

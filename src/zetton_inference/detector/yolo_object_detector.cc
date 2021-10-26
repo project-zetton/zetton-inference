@@ -23,7 +23,7 @@ bool YoloObjectDetector::Init(const std::string& param_uri,
   } else if (net_type == "YOLOV4_TINY") {
     config_.net_type = yolo_trt::ModelType::YOLOV4_TINY;
   } else {
-    ROS_ERROR_STREAM("Unsupported net type: " << net_type);
+    AERROR_F("Unsupported net type: {}", net_type);
     return false;
   }
   auto precision = static_cast<std::string>(params["inference_precision"]);
@@ -37,7 +37,7 @@ bool YoloObjectDetector::Init(const std::string& param_uri,
         package_path +
         static_cast<std::string>(params["calibration_image_list_file_txt"]);
   } else {
-    ROS_ERROR_STREAM("Unsupported inference precision: " << precision);
+    AERROR_F("Unsupported inference precision: {}", precision);
     return false;
   }
 

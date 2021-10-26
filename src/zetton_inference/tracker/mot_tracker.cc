@@ -35,7 +35,7 @@ std::vector<tracker::LocalObject> MotTracker::update_bbox_by_tracker(
 void MotTracker::update_bbox_by_detector(
     const cv::Mat &img, const std::vector<cv::Rect2d> &bboxes,
     const std::vector<float> features_detector, const ros::Time &update_time) {
-  ROS_INFO_STREAM("******Update Bbox by Detector******");
+  AINFO_F("******Update Bbox by Detector******");
 
   // maximum block size, to perform augumentation and rectification of the
   // tracker block
@@ -156,7 +156,7 @@ bool MotTracker::update_local_database(tracker::LocalObject &local_object,
       local_object.database_update_timer.toc() > record_interval) {
     local_object.img_blocks.push_back(img_block);
     local_object.database_update_timer.tic();
-    ROS_INFO_STREAM("Adding an image to the datebase id: " << local_object.id);
+    AINFO_F("Adding an image to the datebase id: ", local_object.id);
     return true;
   } else {
     return false;
@@ -236,14 +236,13 @@ std::vector<tracker::LocalObject> MotTracker::remove_dead_trackers() {
 
 void MotTracker::report_local_object() {
   // lock_guard<mutex> lk(mtx); //lock the thread
-  ROS_INFO("------Local Object List Summary------");
-  ROS_INFO_STREAM("Local Object Num: " << local_objects_list.size());
+  AINFO_F("------Local Object List Summary------");
+  AINFO_F("Local Object Num: {}", local_objects_list.size());
   for (auto lo : local_objects_list) {
-    ROS_INFO_STREAM(
-        "id: " << lo.id << "| database images num: " << lo.img_blocks.size());
+    AINFO_F("id: {} | database images num: {}", lo.id, lo.img_blocks.size());
     std::cout << lo.bbox << std::endl;
   }
-  ROS_INFO("------Summary End------");
+  AINFO_F("------Summary End------");
 }
 
 void MotTracker::visualize_tracking(cv::Mat &img) {
@@ -271,13 +270,13 @@ void MotTracker::detector_and_tracker_association(
     std::vector<tracker::AssociationVector> &all_detected_bbox_ass_vec) {
   // lock_guard<mutex> lk(mtx); //lock
   if (!local_objects_list.empty()) {
-    ROS_INFO_STREAM("SUMMARY:" << bboxes.size() << " bboxes detected!");
+    AINFO_F("SUMMARY: {} bboxes detected!", bboxes.size());
     // perform matching from detector to tracker
     for (int i = 0; i < bboxes.size(); i++) {
       tracker::AssociationVector one_detected_object_ass_vec;
       cv::Rect2d detector_bbox =
           tracker::BboxPadding(bboxes[i], block_max, detector_bbox_padding);
-      std::cout << "Detector" << i << " bbox: " << bboxes[i] << std::endl;
+      AINFO << "Detector" << i << " bbox: " << bboxes[i] << std::endl;
       /*Data Association part:
         - two critertion:
           - augemented bboxes(bbox with padding) have enough overlap
@@ -286,9 +285,9 @@ void MotTracker::detector_and_tracker_association(
       for (int j = 0; j < local_objects_list.size(); j++) {
         double bbox_overlap_ratio = tracker::cal_bbox_overlap_ratio(
             local_objects_list[j].bbox, detector_bbox);
-        ROS_INFO_STREAM("Bbox overlap ratio: " << bbox_overlap_ratio);
-        std::cout << "Tracker " << local_objects_list[j].id
-                  << " bbox: " << local_objects_list[j].bbox << std::endl;
+        AINFO_F("Bbox overlap ratio: {}", bbox_overlap_ratio);
+        AINFO << "Tracker " << local_objects_list[j].id
+              << " bbox: " << local_objects_list[j].bbox;
         if (bbox_overlap_ratio > bbox_overlap_ratio_threshold) {
           // TODO might speed up in here
           float min_query_score =
@@ -306,17 +305,17 @@ void MotTracker::detector_and_tracker_association(
       if (one_detected_object_ass_vec.ass_vector.size() > 1)
         one_detected_object_ass_vec.reranking();
       one_detected_object_ass_vec.report();
-      ROS_INFO("---------------------------------");
+      AINFO_F("---------------------------------");
       all_detected_bbox_ass_vec.push_back(one_detected_object_ass_vec);
     }
     uniquify_detector_association_vectors(all_detected_bbox_ass_vec,
                                           local_objects_list.size());
 
-    ROS_INFO("---Report after uniquification---");
+    AINFO_F("---Report after uniquification---");
     for (auto ass : all_detected_bbox_ass_vec) {
       ass.report();
     }
-    ROS_INFO("---Report finished---");
+    AINFO_F("---Report finished---");
   } else {
     // create empty association vectors to indicate all the detected objects are
     // new
@@ -333,8 +332,7 @@ void MotTracker::manage_local_objects_list_by_detector(
   for (int i = 0; i < all_detected_bbox_ass_vec.size(); i++) {
     if (all_detected_bbox_ass_vec[i].ass_vector.empty()) {
       // this detected object is a new object
-      ROS_INFO_STREAM(
-          "Adding Tracking Object with ID:" << local_id_not_assigned);
+      AINFO_F("Adding Tracking Object with ID: {}", local_id_not_assigned);
       cv::Mat example_img;
       cv::resize(img(bboxes[i]), example_img,
                  cv::Size(128, 256));  // hard code in here
@@ -349,8 +347,7 @@ void MotTracker::manage_local_objects_list_by_detector(
     } else {
       // re-detect a previous tracking object
       int matched_id = all_detected_bbox_ass_vec[i].ass_vector[0].id;
-      ROS_INFO_STREAM("Object " << local_objects_list[matched_id].id
-                                << " re-detected!");
+      AINFO_F("Object {} re-detected!", local_objects_list[matched_id].id);
 
       local_objects_list[matched_id].track_bbox_by_detector(bboxes[i],
                                                             update_time);
@@ -381,8 +378,7 @@ void MotTracker::manage_local_objects_list_by_reid_detector(
   for (int i = 0; i < all_detected_bbox_ass_vec.size(); i++) {
     if (all_detected_bbox_ass_vec[i].ass_vector.empty()) {
       // this detected object is a new object
-      ROS_INFO_STREAM(
-          "Adding Tracking Object with ID:" << local_id_not_assigned);
+      AINFO_F("Adding Tracking Object with ID: {}", local_id_not_assigned);
       cv::Mat example_img;
       cv::resize(img(bboxes[i]), example_img,
                  cv::Size(128, 256));  // hard code in here
@@ -399,8 +395,7 @@ void MotTracker::manage_local_objects_list_by_reid_detector(
     } else {
       // re-detect a previous tracking object
       int matched_id = all_detected_bbox_ass_vec[i].ass_vector[0].id;
-      ROS_INFO_STREAM("Object " << local_objects_list[matched_id].id
-                                << " re-detected!");
+      AINFO_F("Object {} re-detected!", local_objects_list[matched_id].id);
 
       local_objects_list[matched_id].track_bbox_by_detector(bboxes[i],
                                                             update_time);
@@ -477,7 +472,7 @@ bool MotTracker::Track(const cv::Mat &frame, const ros::Time &timestamp,
       if (one_detected_object_ass_vec.ass_vector.size() > 1)
         one_detected_object_ass_vec.reranking();
       // one_detected_object_ass_vec.report();
-      // ROS_INFO("---------------------------------");
+      // AINFO_F("---------------------------------");
       all_detected_bbox_ass_vec.push_back(one_detected_object_ass_vec);
     }
     uniquify_detector_association_vectors(all_detected_bbox_ass_vec,
@@ -493,8 +488,7 @@ bool MotTracker::Track(const cv::Mat &frame, const ros::Time &timestamp,
   for (size_t i = 0; i < all_detected_bbox_ass_vec.size(); i++) {
     if (all_detected_bbox_ass_vec[i].ass_vector.empty()) {
       // this detected object is a new object
-      ROS_INFO_STREAM(
-          "Adding Tracking Object with ID:" << local_id_not_assigned);
+      AINFO_F("Adding Tracking Object with ID: {}", local_id_not_assigned);
       tracker::LocalObject new_object(local_id_not_assigned, detections[i].bbox,
                                       kf_param, timestamp);
       local_id_not_assigned++;
@@ -502,8 +496,7 @@ bool MotTracker::Track(const cv::Mat &frame, const ros::Time &timestamp,
     } else {
       // re-detect a previous tracking object
       int matched_id = all_detected_bbox_ass_vec[i].ass_vector[0].id;
-      ROS_INFO_STREAM("Object " << local_objects_list[matched_id].id
-                                << " re-detected!");
+      AINFO_F("Object {} re-detected!", local_objects_list[matched_id].id);
       local_objects_list[matched_id].track_bbox_by_detector(detections[i].bbox,
                                                             timestamp);
     }

@@ -31,3 +31,6 @@
 *.out
 *.app
 .vscode/
+
+COLCON_IGNORE
+CATKIN_IGNORE

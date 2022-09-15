@@ -1,6 +1,5 @@
 #pragma once
 
-#include "ros/ros.h"
 #include "zetton_inference/interface/base_object_detector.h"
 #include "zetton_inference/interface/base_object_tracker.h"
 #include "zetton_inference/tracker/sort/hungarian.h"
@@ -39,7 +38,7 @@ class SortTracker : public BaseObjectTracker {
   void Infer() override{};
 
   bool Track() override { return true; };
-  bool Track(const cv::Mat &frame, const ros::Time &timestamp,
+  bool Track(const cv::Mat &frame, const double &timestamp,
              const ObjectDetectionResults &detections);
 
   std::vector<TrackingBox> &tracks() { return tracking_results; }

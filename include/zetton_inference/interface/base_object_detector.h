@@ -54,7 +54,7 @@ class BaseObjectDetector : public BaseInference {
    */
   virtual bool Detect(const cv::Mat& frame, ObjectDetectionResults& result) = 0;
 
-  ZETTON_REGISTER_REGISTERER(BaseObjectDetector);
+  ZETTON_REGISTER_REGISTERER(BaseObjectDetector)
 #define ZETTON_REGISTER_OBJECT_DETECTOR(name) \
   ZETTON_REGISTER_CLASS(BaseObjectDetector, name)
 };

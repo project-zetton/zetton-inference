@@ -16,7 +16,7 @@ class BaseObjectTracker : public BaseInference {
   void Infer() override = 0;
   virtual bool Track() = 0;
 
-  ZETTON_REGISTER_REGISTERER(BaseObjectTracker);
+  ZETTON_REGISTER_REGISTERER(BaseObjectTracker)
 #define ZETTON_REGISTER_OBJECT_TRACKER(name) \
   ZETTON_REGISTER_CLASS(BaseObjectTracker, name)
 };

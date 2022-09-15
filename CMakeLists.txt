@@ -47,7 +47,7 @@ project(
 find_package(Threads)
 find_package(Eigen3 REQUIRED)
 find_package(OpenCV 4 REQUIRED)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/yolo-tensorrt)
+find_package(yolo_trt REQUIRED)
 
 # -----------------#
 # Zetton libraries #
@@ -86,7 +86,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_definitions(-O2)
 
 # useful macros
-include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/util.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/util.cmake)
 
 # ##############################################################################
 # Build #
@@ -117,12 +117,11 @@ zetton_cc_library(
   INCLUDES
   ${OpenCV_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIR}
-  ${CMAKE_CURRENT_SOURCE_DIR}/external/yolo-tensorrt/include
   DEPS
   ${OpenCV_LIBS}
   Threads::Threads
   Eigen3::Eigen
-  yolo_trt
+  yolo_trt::yolo_trt
   zetton_common::zetton_common
   zetton_stream::zetton_stream
   # zetton_inference::zetton_inference
@@ -138,32 +137,3 @@ add_simple_examples()
 # Test targets #
 # -------------#
 add_tests_in_dir("inference")
-
-# ##############################################################################
-# Install #
-# ##############################################################################
-
-# installation
-install(
-  TARGETS ${PROJECT_NAME}
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})
-# need cmake version >= 3.13
-install(
-  TARGETS yolo_trt
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})
-install(
-  DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-  PATTERN ".svn" EXCLUDE)
-install(
-  DIRECTORY asset/
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/asset
-  PATTERN ".svn" EXCLUDE)
-
-file(GLOB_RECURSE python_excutables ${PROJECT_SOURCE_DIR}/example/*.py)
-catkin_install_python(PROGRAMS ${python_excutables} DESTINATION
-                      ${CATKIN_PACKAGE_BIN_DESTINATION})

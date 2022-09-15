@@ -9,9 +9,9 @@ namespace inference {
 bool SortTracker::Init() {
   tracker::sort::KalmanTracker::kf_count = 0;
   return true;
-};
+}
 
-bool SortTracker::Track(const cv::Mat &frame, const ros::Time &timestamp,
+bool SortTracker::Track(const cv::Mat &frame, const double &timestamp,
                         const ObjectDetectionResults &detections) {
   ++frame_count_;
 

@@ -8,6 +8,7 @@ include(CMakeFindDependencyMacro)
 find_dependency(Threads REQUIRED)
 find_dependency(Eigen3 REQUIRED)
 find_dependency(OpenCV 4 REQUIRED)
+find_dependency(yolo_trt REQUIRED)
 find_dependency(zetton_common REQUIRED)
 find_dependency(zetton_stream REQUIRED)
 

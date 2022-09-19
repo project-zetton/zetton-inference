@@ -152,11 +152,14 @@ bool SortTracker::Track(const cv::Mat &frame, const double &timestamp,
   for (auto it = trackers_.begin(); it != trackers_.end();) {
     if (((*it).m_time_since_update <= active_age) &&
         ((*it).m_hit_streak >= min_hits_ || frame_count_ <= min_hits_)) {
-      TrackingBox res;
-      res.box = (*it).get_state();
-      res.id = (*it).m_id + 1;
-      res.frame = frame_count_;
-      tracking_results.push_back(res);
+      ObjectPtr obj;
+      obj->camera_supplement.box.xmin = (*it).get_state().tl().x;
+      obj->camera_supplement.box.ymin = (*it).get_state().tl().y;
+      obj->camera_supplement.box.xmax = (*it).get_state().br().x;
+      obj->camera_supplement.box.ymax = (*it).get_state().br().y;
+      obj->id = (*it).m_id + 1;
+      obj->track_id = (*it).m_id + 1;
+      tracking_results.push_back(obj);
       ++it;
     } else {
       ++it;

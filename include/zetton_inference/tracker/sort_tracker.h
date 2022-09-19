@@ -1,5 +1,6 @@
 #pragma once
 
+#include "zetton_inference/base/object/object.h"
 #include "zetton_inference/interface/base_object_detector.h"
 #include "zetton_inference/interface/base_object_tracker.h"
 #include "zetton_inference/tracker/sort/hungarian.h"
@@ -9,27 +10,6 @@ namespace zetton {
 namespace inference {
 
 class SortTracker : public BaseObjectTracker {
-  // TODO move to BaseObjectTracker
-  struct TrackingBox {
-    int frame;
-    int id;
-    cv::Rect_<float> box;
-
-    inline void Draw(cv::Mat &frame) {
-      cv::rectangle(frame, box, cv::Scalar(255, 255, 0), 2);
-      std::stringstream stream;
-      stream << "Track " << id;
-      cv::putText(frame, stream.str(), cv::Point(box.x, box.y - 5), 0, 0.5,
-                  cv::Scalar(255, 255, 0), 2);
-    }
-
-    inline friend std::ostream &operator<<(std::ostream &os,
-                                           const TrackingBox &track) {
-      os << track.id << ":" << track.box;
-      return os;
-    }
-  };
-
  public:
   SortTracker() = default;
   ~SortTracker() override = default;
@@ -43,7 +23,7 @@ class SortTracker : public BaseObjectTracker {
   bool Track(const cv::Mat &frame, const double &timestamp,
              std::vector<ObjectPtr> &detections);
 
-  std::vector<TrackingBox> &tracks() { return tracking_results; }
+  std::vector<ObjectPtr> &tracks() { return tracking_results; }
 
  private:
   // Computes IOU between two bounding boxes
@@ -75,7 +55,7 @@ class SortTracker : public BaseObjectTracker {
   std::vector<cv::Point> matched_pairs;
   std::set<int> updated_tracks;
   std::vector<int> duplicated_tracks;
-  std::vector<TrackingBox> tracking_results;
+  std::vector<ObjectPtr> tracking_results;
 
   unsigned int num_tracks = 0;
   unsigned int num_detections = 0;

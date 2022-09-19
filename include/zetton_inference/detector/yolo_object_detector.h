@@ -11,15 +11,17 @@ class YoloObjectDetector : public BaseObjectDetector {
   YoloObjectDetector() = default;
   ~YoloObjectDetector() override = default;
 
-  bool Init() override;
+  std::string Name() const final;
+
+  bool Init(const ObjectDetectorInitOptions& options =
+                ObjectDetectorInitOptions()) final;
   bool Init(const yolo_trt::Config& config);
 
-  void Infer() override {}
-
-  bool Detect(const cv::Mat& frame, ObjectDetectionResults& results) override;
+  bool Detect(const cv::Mat& frame, std::vector<ObjectPtr>& results) final;
   bool Detect(const std::vector<cv::Mat>& batch_frames,
-              BatchObjectDetectionResults& batch_results);
+              std::vector<std::vector<ObjectPtr>>& batch_results);
 
+ public:
   void SetProbThresh(float m_prob_thresh);
   void SetWidthLimitation(float min_value, float max_value);
   void SetHeightLimitation(float min_value, float max_value);

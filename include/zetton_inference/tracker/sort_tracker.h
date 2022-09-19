@@ -10,7 +10,7 @@ namespace inference {
 
 class SortTracker : public BaseObjectTracker {
   // TODO move to BaseObjectTracker
-  typedef struct TrackingBox {
+  struct TrackingBox {
     int frame;
     int id;
     cv::Rect_<float> box;
@@ -28,18 +28,20 @@ class SortTracker : public BaseObjectTracker {
       os << track.id << ":" << track.box;
       return os;
     }
-  } TrackingBox;
+  };
 
  public:
   SortTracker() = default;
   ~SortTracker() override = default;
 
-  bool Init() override;
-  void Infer() override{};
+  std::string Name() const final;
+
+  bool Init(const ObjectTrackerInitOptions &options =
+                ObjectTrackerInitOptions()) override;
 
   bool Track() override { return true; };
   bool Track(const cv::Mat &frame, const double &timestamp,
-             const ObjectDetectionResults &detections);
+             std::vector<ObjectPtr> &detections);
 
   std::vector<TrackingBox> &tracks() { return tracking_results; }
 

@@ -2,10 +2,16 @@
 
 #include <string>
 
+#include "zetton_inference/base/object/object.h"
+
 namespace zetton {
 namespace inference {
 
-bool YoloObjectDetector::Init() { return false; }
+std::string YoloObjectDetector::Name() const { return "YoloObjectDetector"; }
+
+bool YoloObjectDetector::Init(const ObjectDetectorInitOptions& options) {
+  return false;
+}
 
 bool YoloObjectDetector::Init(const yolo_trt::Config& config) {
   // copy config
@@ -17,7 +23,7 @@ bool YoloObjectDetector::Init(const yolo_trt::Config& config) {
 }
 
 bool YoloObjectDetector::Detect(const cv::Mat& frame,
-                                ObjectDetectionResults& results) {
+                                std::vector<ObjectPtr>& results) {
   // note that the frame should be RGB order instead of BGR
 
   // construct inputs
@@ -28,23 +34,40 @@ bool YoloObjectDetector::Detect(const cv::Mat& frame,
   detector_->detect(batch_frames, batch_results_raw);
   // post-process
   FilterResults(batch_results_raw[0]);
-  for (const auto& res : batch_results_raw[0]) {
-    results.emplace_back(res.rect, res.id, res.prob);
+  for (const auto& result : batch_results_raw[0]) {
+    ObjectPtr obj;
+    obj->camera_supplement.on_use = true;
+    obj->camera_supplement.box.xmin = static_cast<float>(result.rect.tl().x);
+    obj->camera_supplement.box.ymin = static_cast<float>(result.rect.tl().y);
+    obj->camera_supplement.box.xmax = static_cast<float>(result.rect.br().x);
+    obj->camera_supplement.box.ymax = static_cast<float>(result.rect.br().y);
+    obj->type = result.id;
+    obj->type_prob = result.prob;
+    results.push_back(obj);
   }
   return true;
 }
 
-bool YoloObjectDetector::Detect(const std::vector<cv::Mat>& batch_frames,
-                                BatchObjectDetectionResults& batch_results) {
+bool YoloObjectDetector::Detect(
+    const std::vector<cv::Mat>& batch_frames,
+    std::vector<std::vector<ObjectPtr>>& batch_results) {
   // detect
   std::vector<yolo_trt::BatchResult> batch_results_raw;
   detector_->detect(batch_frames, batch_results_raw);
   // post-process
   for (auto& batch_result_raw : batch_results_raw) {
     FilterResults(batch_result_raw);
-    ObjectDetectionResults batch_result;
+    std::vector<ObjectPtr> batch_result;
     for (const auto& result : batch_result_raw) {
-      batch_result.emplace_back(result.rect, result.id, result.prob);
+      ObjectPtr obj;
+      obj->camera_supplement.on_use = true;
+      obj->camera_supplement.box.xmin = static_cast<float>(result.rect.tl().x);
+      obj->camera_supplement.box.ymin = static_cast<float>(result.rect.tl().y);
+      obj->camera_supplement.box.xmax = static_cast<float>(result.rect.br().x);
+      obj->camera_supplement.box.ymax = static_cast<float>(result.rect.br().y);
+      obj->type = result.id;
+      obj->type_prob = result.prob;
+      batch_result.push_back(obj);
     }
     batch_results.push_back(batch_result);
   }

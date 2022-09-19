@@ -3,22 +3,27 @@
 #include <algorithm>
 #include <opencv2/core/types.hpp>
 
+#include "zetton_inference/util/geometry_util.h"
+
 namespace zetton {
 namespace inference {
 
-bool SortTracker::Init() {
+std::string SortTracker::Name() const { return "SortObejctTracker"; }
+
+bool SortTracker::Init(const ObjectTrackerInitOptions &options) {
   tracker::sort::KalmanTracker::kf_count = 0;
   return true;
 }
 
 bool SortTracker::Track(const cv::Mat &frame, const double &timestamp,
-                        const ObjectDetectionResults &detections) {
+                        std::vector<ObjectPtr> &detections) {
   ++frame_count_;
 
   if (trackers_.empty()) {
     // initialize kalman trackers using first detections.
     for (unsigned int i = 0; i < detections.size(); i++) {
-      auto trk = tracker::sort::KalmanTracker(frame_count_, detections[i].bbox);
+      auto trk = tracker::sort::KalmanTracker(
+          frame_count_, GetCvRect(detections[i]->camera_supplement.box));
       trackers_.push_back(trk);
     }
     return true;
@@ -47,7 +52,9 @@ bool SortTracker::Track(const cv::Mat &frame, const double &timestamp,
     for (unsigned int j = 0; j < num_detections; j++) {
       // use 1-iou because the hungarian algorithm computes a minimum-cost
       // assignment.
-      iou_matrix[i][j] = 1 - GetIOU(predicted_boxes[i], detections[j].bbox);
+      iou_matrix[i][j] =
+          1 - GetIOU(predicted_boxes[i],
+                     GetCvRect(detections[j]->camera_supplement.box));
     }
   }
 
@@ -106,14 +113,15 @@ bool SortTracker::Track(const cv::Mat &frame, const double &timestamp,
   for (unsigned int i = 0; i < matched_pairs.size(); i++) {
     trkIdx = matched_pairs[i].x;
     detIdx = matched_pairs[i].y;
-    trackers_[trkIdx].update(detections[detIdx].bbox);
+    trackers_[trkIdx].update(
+        GetCvRect(detections[detIdx]->camera_supplement.box));
     updated_tracks.insert(trkIdx);
   }
 
   // create and initialise new trackers for unmatched detections
   for (auto umd : unmatched_detections) {
-    auto tracker =
-        tracker::sort::KalmanTracker(frame_count_, detections[umd].bbox);
+    auto tracker = tracker::sort::KalmanTracker(
+        frame_count_, GetCvRect(detections[umd]->camera_supplement.box));
     trackers_.push_back(tracker);
     updated_tracks.insert(trackers_.size() - 1);
   }

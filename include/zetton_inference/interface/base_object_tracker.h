@@ -11,15 +11,26 @@
 namespace zetton {
 namespace inference {
 
+struct ObjectTrackerInitOptions {};
+
+struct ObjectTrackerOptions {};
+
 class BaseObjectTracker : public BaseInference {
  public:
-  void Infer() override = 0;
-  virtual bool Track() = 0;
+  BaseObjectTracker() = default;
+  ~BaseObjectTracker() override = default;
 
-  ZETTON_REGISTER_REGISTERER(BaseObjectTracker)
+ public:
+  virtual bool Init(
+      const ObjectTrackerInitOptions& options = ObjectTrackerInitOptions()) = 0;
+
+ public:
+  virtual bool Track() = 0;
+};
+
+ZETTON_REGISTER_REGISTERER(BaseObjectTracker)
 #define ZETTON_REGISTER_OBJECT_TRACKER(name) \
   ZETTON_REGISTER_CLASS(BaseObjectTracker, name)
-};
 
 }  // namespace inference
 }  // namespace zetton

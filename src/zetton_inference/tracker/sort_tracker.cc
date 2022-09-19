@@ -174,5 +174,7 @@ bool SortTracker::Track(const cv::Mat &frame, const double &timestamp,
   return true;
 }
 
+ZETTON_REGISTER_OBJECT_TRACKER(SortTracker)
+
 }  // namespace inference
 }  // namespace zetton

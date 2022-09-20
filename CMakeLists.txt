@@ -53,7 +53,7 @@ find_package(yolo_trt REQUIRED)
 # CUDA libraries #
 # ---------------#
 
-set(USE_GPU ON)
+set(USE_GPU ON CACHE BOOL "Use GPU")
 if(USE_GPU)
   add_definitions(-DUSE_GPU=1)
   find_package(CUDAToolkit REQUIRED)

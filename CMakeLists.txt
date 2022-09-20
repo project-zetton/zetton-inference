@@ -49,6 +49,18 @@ find_package(Eigen3 REQUIRED)
 find_package(OpenCV 4 REQUIRED)
 find_package(yolo_trt REQUIRED)
 
+# ---------------#
+# CUDA libraries #
+# ---------------#
+
+set(USE_GPU ON)
+if(USE_GPU)
+  add_definitions(-DUSE_GPU=1)
+  find_package(CUDAToolkit REQUIRED)
+else()
+  add_definitions(-DUSE_GPU=0)
+endif()
+
 # -----------------#
 # Zetton libraries #
 # -----------------#
@@ -108,6 +120,15 @@ include(GNUInstallDirs)
 file(GLOB_RECURSE src_files ${PROJECT_SOURCE_DIR}/src/*.cc
      ${PROJECT_SOURCE_DIR}/src/*/*.cc)
 
+if(USE_GPU)
+  if(NOT CUDA_VERSION VERSION_LESS 11.0)
+    # CUDA 11.0 removes nppicom
+    zetton_list_filterout(CUDA_nppi_LIBRARY "nppicom")
+    zetton_list_filterout(CUDA_npp_LIBRARY "nppicom")
+  endif()
+  list(APPEND EXTRA_LIBRARIES ${CUDA_LIBRARIES} ${CUDA_npp_LIBRARY})
+endif()
+
 # common library
 zetton_cc_library(
   NAME
@@ -118,6 +139,7 @@ zetton_cc_library(
   ${OpenCV_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIR}
   DEPS
+  ${EXTRA_LIBRARIES}
   ${OpenCV_LIBS}
   Threads::Threads
   Eigen3::Eigen

@@ -199,3 +199,12 @@ function(zetton_cc_library)
     FILE "${PROJECT_BINARY_DIR}/${_NAME}Targets.cmake")
 
 endfunction()
+
+# remove all matching elements from the list
+macro(zetton_list_filterout lst regex)
+  foreach(item ${${lst}})
+    if(item MATCHES "${regex}")
+      list(REMOVE_ITEM ${lst} "${item}")
+    endif()
+  endforeach()
+endmacro()

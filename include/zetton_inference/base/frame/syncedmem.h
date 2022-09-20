@@ -4,12 +4,33 @@
 
 #include "zetton_common/log/log.h"
 
-#ifndef NO_GPU
-#define NO_GPU assert(false)
+#if USE_GPU == 1
+#include <cuda.h>
+#include <cuda_runtime.h>
+#endif
+
+#ifndef NOT_IMPLEMENTED
+#define NOT_IMPLEMENTED AFATAL_F("Not implemented yet.")
 #endif
 
 namespace zetton {
 namespace inference {
+
+#if USE_GPU == 1
+#define BASE_CUDA_CHECK(condition) \
+  { zetton::inference::GPUAssert((condition), __FILE__, __LINE__); }
+
+inline void GPUAssert(cudaError_t code, const char* file, int line,
+                      bool abort = true) {
+  if (code != cudaSuccess) {
+    fprintf(stderr, "GPUassert: %s %s %d\n", cudaGetErrorString(code), file,
+            line);
+    if (abort) {
+      exit(code);
+    }
+  }
+}
+#endif
 
 inline void ZettonMallocHost(void** ptr, size_t size, bool use_cuda) {
 #if USE_GPU == 1

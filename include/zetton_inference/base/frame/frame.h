@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "zetton_inference/base/frame/data_provider.h"
@@ -22,6 +23,9 @@ struct CameraFrame {
   // tracked objects
   std::vector<ObjectPtr> tracked_objects;
 };
+
+using CameraFramePtr = std::shared_ptr<CameraFrame>;
+using CameraFrameConstPtr = std::shared_ptr<const CameraFrame>;
 
 }  // namespace inference
 }  // namespace zetton

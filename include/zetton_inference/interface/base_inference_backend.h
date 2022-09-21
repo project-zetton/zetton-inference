@@ -20,11 +20,11 @@ class BaseInferenceBackend {
 
  public:
   void SetMaxBatchSize(const int &batch_size) { max_batch_size_ = batch_size; }
-  void SetGpuId(const int &gpu_id) { gpu_id_ = gpu_id; }
+  void SetDeviceId(const int &gpu_id) { device_id_ = gpu_id; }
 
  protected:
   int max_batch_size_ = 1;
-  int gpu_id_ = -1;
+  int device_id_ = -1;
 };
 
 ZETTON_REGISTER_REGISTERER(BaseInferenceBackend)

@@ -116,23 +116,26 @@ class InferenceRuntime {
 
  public:
   bool Init(const InferenceRuntimeOptions& options);
-  // bool Infer(std::vector<FDTensor>& input_tensors,
-  //            std::vector<FDTensor>* output_tensors);
+  bool Infer(std::vector<Tensor>& input_tensors,
+             std::vector<Tensor>* output_tensors) {
+    return backend_->Infer(input_tensors, output_tensors);
+  };
 
+ public:
+  int NumInputs() { return backend_->NumInputs(); }
+  int NumOutputs() { return backend_->NumOutputs(); }
+  TensorInfo GetInputInfo(int index) { return backend_->GetInputInfo(index); }
+  TensorInfo GetOutputInfo(int index) { return backend_->GetOutputInfo(index); }
+
+ private:
   void CreateONNXRuntimeBackend();
   void CreateTensorRTBackend();
   void CreateOpenVINOBackend();
 
-  // int NumInputs() { return backend_->NumInputs(); }
-  // int NumOutputs() { return backend_->NumOutputs(); }
-  // TensorInfo GetInputInfo(int index);
-  // TensorInfo GetOutputInfo(int index);
-  // std::vector<TensorInfo> GetInputInfos();
-  // std::vector<TensorInfo> GetOutputInfos();
-
-  InferenceRuntimeOptions options;
-
  private:
+  /// \brief options for model inference runtime
+  InferenceRuntimeOptions options;
+  /// \brief backend engine for model inference runtime
   std::unique_ptr<BaseInferenceBackend> backend_;
 };
 

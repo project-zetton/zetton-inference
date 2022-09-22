@@ -5,6 +5,8 @@
 #include <vector>
 
 #include "zetton_common/util/registerer.h"
+#include "zetton_inference/base/tensor/tensor.h"
+#include "zetton_inference/base/tensor/tensor_info.h"
 
 namespace zetton {
 namespace inference {
@@ -14,17 +16,17 @@ class BaseInferenceBackend {
   BaseInferenceBackend() = default;
   virtual ~BaseInferenceBackend() = default;
 
- public:
-  virtual bool Init(const std::map<std::string, std::vector<int>> &shapes) = 0;
-  virtual void Infer() = 0;
+  virtual bool Initialized() const { return initialized_; }
 
- public:
-  void SetMaxBatchSize(const int &batch_size) { max_batch_size_ = batch_size; }
-  void SetDeviceId(const int &gpu_id) { device_id_ = gpu_id; }
+  virtual int NumInputs() const = 0;
+  virtual int NumOutputs() const = 0;
+  virtual TensorInfo GetInputInfo(int index) = 0;
+  virtual TensorInfo GetOutputInfo(int index) = 0;
+  virtual bool Infer(std::vector<Tensor>& inputs,
+                     std::vector<Tensor>* outputs) = 0;
 
- protected:
-  int max_batch_size_ = 1;
-  int device_id_ = -1;
+ private:
+  bool initialized_ = false;
 };
 
 ZETTON_REGISTER_REGISTERER(BaseInferenceBackend)

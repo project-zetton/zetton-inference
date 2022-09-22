@@ -26,8 +26,7 @@ Tensor::Tensor(const Tensor& other)
     buffer_ = nullptr;
   } else {
     size_t nbytes = Nbytes();
-    ACHECK_F(ReallocFn(nbytes),
-             "The FastDeploy InferenceTensor allocate memory error");
+    ACHECK_F(ReallocFn(nbytes), "Tensor allocate memory error");
     CopyBuffer(buffer_, other.buffer_, nbytes);
   }
 }
@@ -156,8 +155,7 @@ void Tensor::Allocate(const std::vector<int64_t>& new_shape,
   shape.assign(new_shape.begin(), new_shape.end());
   device = new_device;
   size_t nbytes = Nbytes();
-  ACHECK_F(ReallocFn(nbytes),
-           "The FastDeploy InferenceTensor allocate cpu memory error");
+  ACHECK_F(ReallocFn(nbytes), "Tensor allocate cpu memory error");
 }
 
 int Tensor::Nbytes() const { return Numel() * InferenceDataTypeSize(dtype); }
@@ -280,7 +278,7 @@ void Tensor::CopyBuffer(void* dst, const void* src, size_t nbytes) {
 
 #else
     AFATAL_F(
-        "The FastDeploy didn't compile under -DUSE_GPU=ON, so copying gpu "
+        "The code didn't compile under -DUSE_GPU=ON, so copying gpu "
         "buffer is an unexpected problem happend.");
 #endif
   } else {

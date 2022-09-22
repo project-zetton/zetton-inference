@@ -2,6 +2,7 @@
 
 #include <zetton_common/log/log.h>
 
+#include "zetton_inference/interface/base_inference_backend.h"
 #include "zetton_inference/util/runtime_util.h"
 
 namespace zetton {
@@ -136,13 +137,20 @@ void InferenceRuntime::CreateOpenVINOBackend() {
 void InferenceRuntime::CreateONNXRuntimeBackend() {
   ACHECK_F(IsBackendAvailable(InferenceBackendType::kONNXRuntime),
            "ONNXRuntime backend is not available.");
-  AFATAL_F("OpenVINO backend is not supported yet.");
+  AFATAL_F("ONNXRuntime backend is not supported yet.");
 }
 
 void InferenceRuntime::CreateTensorRTBackend() {
+  // check if TensorRT backend is available
   ACHECK_F(IsBackendAvailable(InferenceBackendType::kTensorRT),
            "TensorRT backend is not available.");
-  AFATAL_F("OpenVINO backend is not supported yet.");
+  // create TensorRT backend
+  backend_.reset(BaseInferenceBackendRegisterer::GetInstanceByName(
+      "TensorRTInferenceBackend"));
+  // check if backend is created successfully
+  ACHECK_F(backend_ != nullptr, "Failed to create TensorRT backend.");
+  // initialize backend and check if it's successful
+  ACHECK_F(backend_->Init(options), "Failed to init TensorRT backend.");
 }
 
 }  // namespace inference

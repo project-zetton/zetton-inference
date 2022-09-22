@@ -31,6 +31,7 @@ enum class InferenceBackendType {
 
 enum class InferenceFrontendType {
   kUnknown,
+  kSerialized,
   kAuto,
   kONNX,
   // kPyTorch,

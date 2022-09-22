@@ -5,7 +5,7 @@
 namespace zetton {
 namespace inference {
 
-enum class InferenceDevice { kUnknwon = 0, kCPU, kGPU };
+enum class InferenceDeviceType { kUnknwon = 0, kCPU, kGPU };
 
 enum class InferenceDataType {
   kUnknwon = 0,
@@ -37,9 +37,11 @@ enum class InferenceFrontendType {
   // kTensorFlow,
 };
 
-std::string ToString(const InferenceDevice& device);
+std::string ToString(const InferenceDeviceType& device);
+std::string ToString(const InferenceDataType& dtype);
 std::string ToString(const InferenceBackendType& backend);
 std::string ToString(const InferenceFrontendType& frontend);
+int32_t InferenceDataTypeSize(const InferenceDataType& dtype);
 
 }  // namespace inference
 }  // namespace zetton

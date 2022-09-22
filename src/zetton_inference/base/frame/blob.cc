@@ -6,11 +6,7 @@ namespace inference {
 template <typename Dtype>
 void Blob<Dtype>::Reshape(const int num, const int channels, const int height,
                           const int width) {
-  std::vector<int> shape(4);
-  shape[0] = num;
-  shape[1] = channels;
-  shape[2] = height;
-  shape[3] = width;
+  std::vector<int> shape = {num, channels, height, width};
   Reshape(shape);
 }
 

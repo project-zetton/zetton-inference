@@ -19,16 +19,16 @@ void InferenceRuntimeOptions::SetModelPath(const std::string& model_path,
 }
 
 void InferenceRuntimeOptions::UseGpu(int gpu_id) {
-#ifdef WITH_GPU
-  device = InferenceDevice::kGPU;
+#ifdef USE_GPU
+  device = InferenceDeviceType::kGPU;
   device_id = gpu_id;
 #else
   AWARN_F("This project hasn't been compiled with GPU, use CPU forcely.");
-  device = InferenceDevice::kCPU;
+  device = InferenceDeviceType::kCPU;
 #endif
 }
 
-void InferenceRuntimeOptions::UseCpu() { device = InferenceDevice::kCPU; }
+void InferenceRuntimeOptions::UseCpu() { device = InferenceDeviceType::kCPU; }
 
 void InferenceRuntimeOptions::SetCpuThreadNum(int thread_num) {
   ACHECK_F(thread_num > 0, "The thread_num must be greater than 0.");
@@ -100,18 +100,21 @@ bool InferenceRuntime::Init(const InferenceRuntimeOptions& input_options) {
   }
 
   if (options.backend == InferenceBackendType::kONNXRuntime) {
-    ACHECK_F(options.device == InferenceDevice::kCPU ||
-                 options.device == InferenceDevice::kGPU,
+    ACHECK_F(options.device == InferenceDeviceType::kCPU ||
+                 options.device == InferenceDeviceType::kGPU,
              "{} only supports {} and {}.", ToString(options.backend),
-             ToString(InferenceDevice::kCPU), ToString(InferenceDevice::kGPU));
+             ToString(InferenceDeviceType::kCPU),
+             ToString(InferenceDeviceType::kGPU));
     CreateONNXRuntimeBackend();
   } else if (options.backend == InferenceBackendType::kTensorRT) {
-    ACHECK_F(options.device == InferenceDevice::kGPU, "{} only supports {}.",
-             ToString(options.backend), ToString(InferenceDevice::kGPU));
+    ACHECK_F(options.device == InferenceDeviceType::kGPU,
+             "{} only supports {}.", ToString(options.backend),
+             ToString(InferenceDeviceType::kGPU));
     CreateTensorRTBackend();
   } else if (options.backend == InferenceBackendType::kOpenVINO) {
-    ACHECK_F(options.device == InferenceDevice::kCPU, "{} only supports {}.",
-             ToString(options.backend), ToString(InferenceDevice::kCPU));
+    ACHECK_F(options.device == InferenceDeviceType::kCPU,
+             "{} only supports {}.", ToString(options.backend),
+             ToString(InferenceDeviceType::kCPU));
     CreateOpenVINOBackend();
   } else {
     AINFO_F("Unknown backend: {}.", ToString(options.backend));

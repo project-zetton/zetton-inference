@@ -2,56 +2,10 @@
 
 #include <cassert>
 
-#include "zetton_common/log/log.h"
-
-#if USE_GPU == 1
-#include <cuda.h>
-#include <cuda_runtime.h>
-#endif
-
-#ifndef NOT_IMPLEMENTED
-#define NOT_IMPLEMENTED AFATAL_F("Not implemented yet.")
-#endif
+#include "zetton_inference/base/common.h"
 
 namespace zetton {
 namespace inference {
-
-#if USE_GPU == 1
-#define BASE_CUDA_CHECK(condition) \
-  { zetton::inference::GPUAssert((condition), __FILE__, __LINE__); }
-
-inline void GPUAssert(cudaError_t code, const char* file, int line,
-                      bool abort = true) {
-  if (code != cudaSuccess) {
-    fprintf(stderr, "GPUassert: %s %s %d\n", cudaGetErrorString(code), file,
-            line);
-    if (abort) {
-      exit(code);
-    }
-  }
-}
-#endif
-
-inline void ZettonMallocHost(void** ptr, size_t size, bool use_cuda) {
-#if USE_GPU == 1
-  if (use_cuda) {
-    BASE_CUDA_CHECK(cudaMallocHost(ptr, size));
-    return;
-  }
-#endif
-  *ptr = malloc(size);
-  ACHECK_NOTNULL_F(*ptr, "host allocation of size {} failed", size);
-}
-
-inline void ZettonFreeHost(void* ptr, bool use_cuda) {
-#if USE_GPU == 1
-  if (use_cuda) {
-    BASE_CUDA_CHECK(cudaFreeHost(ptr));
-    return;
-  }
-#endif
-  free(ptr);
-}
 
 /// \brief Manages memory allocation and synchronization between the host (CPU)
 /// and device (GPU).

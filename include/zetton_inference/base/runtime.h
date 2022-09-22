@@ -11,10 +11,6 @@
 namespace zetton {
 namespace inference {
 
-std::vector<InferenceBackendType> GetAvailableBackends();
-
-bool IsBackendAvailable(const InferenceBackendType& backend);
-
 class InferenceRuntimeOptions {
  public:
   InferenceRuntimeOptions() = default;
@@ -67,7 +63,7 @@ class InferenceRuntimeOptions {
   InferenceBackendType backend = InferenceBackendType::kUnknown;
 
   /// \brief device for model infernce
-  InferenceDevice device = InferenceDevice::kCPU;
+  InferenceDeviceType device = InferenceDeviceType::kCPU;
 
   /// \brief device id (e.g. GPU id) for model inference
   int device_id = 0;

@@ -58,6 +58,10 @@ std::string ToString(const InferenceBackendType& backend) {
 std::string ToString(const InferenceFrontendType& frontend) {
   if (frontend == InferenceFrontendType::kONNX) {
     return "ONNX";
+  } else if (frontend == InferenceFrontendType::kSerialized) {
+    return "Serialized";
+  } else if (frontend == InferenceFrontendType::kAuto) {
+    return "Auto";
   } else {
     return "Unknown";
   }

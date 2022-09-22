@@ -1,4 +1,4 @@
-#include "zetton_inference/base/frame/blob.h"
+#include "zetton_inference/base/tensor/blob.h"
 
 namespace zetton {
 namespace inference {
@@ -108,12 +108,6 @@ template <typename Dtype>
 Dtype* Blob<Dtype>::mutable_gpu_data() {
   ACHECK_NOTNULL(data_);
   return static_cast<Dtype*>(data_->mutable_gpu_data());
-}
-
-template <typename Dtype>
-void Blob<Dtype>::ShareData(const Blob& other) {
-  ACHECK_EQ(count_, other.count());
-  data_ = other.data();
 }
 
 template class Blob<bool>;

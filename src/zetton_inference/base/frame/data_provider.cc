@@ -2,7 +2,7 @@
 
 #include <cwchar>
 
-#include "zetton_inference/base/frame/syncedmem.h"
+#include "zetton_inference/base/tensor/syncedmem.h"
 
 #if USE_GPU == 1
 #include <nppi.h>

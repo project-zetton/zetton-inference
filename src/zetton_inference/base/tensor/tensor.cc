@@ -2,6 +2,7 @@
 
 #include <absl/strings/str_join.h>
 
+#include <cstdint>
 #include <numeric>
 #include <sstream>
 
@@ -15,10 +16,10 @@ namespace inference {
 Tensor::Tensor(const std::string& tensor_name) { name = tensor_name; }
 
 Tensor::Tensor(const Tensor& other)
-    : shape(other.shape),
-      name(other.name),
+    : external_data_ptr(other.external_data_ptr),
       dtype(other.dtype),
-      external_data_ptr(other.external_data_ptr),
+      shape(other.shape),
+      name(other.name),
       device(other.device) {
   // Copy buffer
   if (other.buffer_ == nullptr) {
@@ -33,13 +34,12 @@ Tensor::Tensor(const Tensor& other)
 
 Tensor::Tensor(Tensor&& other) noexcept
     : buffer_(other.buffer_),
+      external_data_ptr(other.external_data_ptr),
+      dtype(other.dtype),
       shape(std::move(other.shape)),
       name(std::move(other.name)),
-      dtype(other.dtype),
-      external_data_ptr(other.external_data_ptr),
       device(other.device) {
   other.name = "";
-  // Note(zhoushunjie): Avoid double free.
   other.buffer_ = nullptr;
   other.external_data_ptr = nullptr;
 }
@@ -77,7 +77,6 @@ Tensor& Tensor::operator=(Tensor&& other) noexcept {
     device = other.device;
 
     other.name = "";
-    // Note(zhoushunjie): Avoid double free.
     other.buffer_ = nullptr;
     other.external_data_ptr = nullptr;
   }
@@ -124,8 +123,8 @@ const void* Tensor::CpuData() const {
     return cpu_ptr->data();
 #else
     AFATAL_F(
-        "The code didn't compile under -DUSE_GPU=ON, so this is "
-        "an unexpected problem happend.");
+        "The code didn't compile under -DUSE_GPU=ON, so this is an unexpected "
+        "problem happend.");
 #endif
   }
   return Data();
@@ -174,7 +173,7 @@ void Tensor::Resize(const std::vector<int64_t>& new_shape) {
   int new_numel = std::accumulate(new_shape.begin(), new_shape.end(), 1,
                                   std::multiplies<int>());
   if (new_numel > numel) {
-    size_t nbytes = new_numel * InferenceDataTypeSize(dtype);
+    size_t nbytes = static_cast<long>(new_numel) * InferenceDataTypeSize(dtype);
     ReallocFn(nbytes);
   }
   shape.assign(new_shape.begin(), new_shape.end());
@@ -195,8 +194,8 @@ void Tensor::Resize(const std::vector<int64_t>& new_shape,
 }
 
 template <typename T>
-void CalculateStatusInfo(void* src_ptr, int size, double* mean, double* max,
-                         double* min) {
+void CalculateTensorStats(void* src_ptr, int size, double* mean, double* max,
+                          double* min) {
   T* ptr = static_cast<T*>(src_ptr);
   *mean = 0;
   *max = -99999999;
@@ -218,17 +217,17 @@ void Tensor::PrintInfo(const std::string& prefix) {
   double max = -99999999;
   double min = 99999999;
   if (dtype == InferenceDataType::kFP32) {
-    CalculateStatusInfo<float>(Data(), Numel(), &mean, &max, &min);
+    CalculateTensorStats<float>(Data(), Numel(), &mean, &max, &min);
   } else if (dtype == InferenceDataType::kFP64) {
-    CalculateStatusInfo<double>(Data(), Numel(), &mean, &max, &min);
+    CalculateTensorStats<double>(Data(), Numel(), &mean, &max, &min);
   } else if (dtype == InferenceDataType::kINT8) {
-    CalculateStatusInfo<int8_t>(Data(), Numel(), &mean, &max, &min);
+    CalculateTensorStats<int8_t>(Data(), Numel(), &mean, &max, &min);
   } else if (dtype == InferenceDataType::kUINT8) {
-    CalculateStatusInfo<uint8_t>(Data(), Numel(), &mean, &max, &min);
+    CalculateTensorStats<uint8_t>(Data(), Numel(), &mean, &max, &min);
   } else if (dtype == InferenceDataType::kINT32) {
-    CalculateStatusInfo<int32_t>(Data(), Numel(), &mean, &max, &min);
+    CalculateTensorStats<int32_t>(Data(), Numel(), &mean, &max, &min);
   } else if (dtype == InferenceDataType::kINT64) {
-    CalculateStatusInfo<int64_t>(Data(), Numel(), &mean, &max, &min);
+    CalculateTensorStats<int64_t>(Data(), Numel(), &mean, &max, &min);
   } else {
     AFATAL_F(
         "PrintInfo function doesn't support current situation, maybe you "
@@ -251,8 +250,8 @@ bool Tensor::ReallocFn(size_t nbytes) {
     return buffer_ != nullptr;
 #else
     AFATAL_F(
-        "The code didn't compile under -DUSE_GPU=ON,"
-        "so this is an unexpected problem happend.");
+        "The code didn't compile under -DUSE_GPU=ON, so this is an unexpected "
+        "problem happend.");
 #endif
   }
   buffer_ = realloc(buffer_, nbytes);
@@ -280,10 +279,9 @@ void Tensor::CopyBuffer(void* dst, const void* src, size_t nbytes) {
              "[ERROR] Error occurs while copy memory from GPU to GPU");
 
 #else
-    FDASSERT(false,
-             "The FastDeploy didn't compile under -DUSE_GPU=ON, so copying "
-             "gpu buffer is "
-             "an unexpected problem happend.");
+    AFATAL_F(
+        "The FastDeploy didn't compile under -DUSE_GPU=ON, so copying gpu "
+        "buffer is an unexpected problem happend.");
 #endif
   } else {
     std::memcpy(dst, src, nbytes);

@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "zetton_common/log/log.h"
-#include "zetton_inference/base/frame/syncedmem.h"
+#include "zetton_inference/base/tensor/syncedmem.h"
 
 namespace zetton {
 namespace inference {
@@ -222,17 +222,6 @@ class Blob {
   void set_head_gpu() { data_->set_head_gpu(); }
   void set_head_cpu() { data_->set_head_cpu(); }
   SyncedMemory::SyncedHead head() const { return data_->head(); }
-
-  /**
-   * @brief Set the data_ std::shared_ptr to point to the SyncedMemory holding
-   * the
-   *        data_ of Blob other -- useful in Layer%s which simply perform a copy
-   *        in their Forward pass.
-   *
-   * This deallocates the SyncedMemory holding this Blob's data_, as
-   * std::shared_ptr calls its destructor when reset with the "=" operator.
-   */
-  void ShareData(const Blob& other);
 
  protected:
   std::shared_ptr<SyncedMemory> data_;

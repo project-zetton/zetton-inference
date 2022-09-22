@@ -1,4 +1,4 @@
-#include "zetton_inference/base/frame/syncedmem.h"
+#include "zetton_inference/base/tensor/syncedmem.h"
 
 #include <zetton_common/log/log.h>
 #include "zetton_inference/base/tensor/allocate.h"

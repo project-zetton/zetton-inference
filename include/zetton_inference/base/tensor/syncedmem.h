@@ -20,6 +20,7 @@ class SyncedMemory {
   void operator=(const SyncedMemory&) = delete;
   ~SyncedMemory();
 
+ public:
   const void* cpu_data();
   void set_cpu_data(void* data);
   const void* gpu_data();

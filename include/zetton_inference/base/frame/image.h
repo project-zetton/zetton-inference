@@ -5,7 +5,7 @@
 #include <utility>
 
 #include "zetton_common/log/log.h"
-#include "zetton_inference/base/frame/blob.h"
+#include "zetton_inference/base/tensor/blob.h"
 #include "zetton_inference/base/geometry/box.h"
 
 namespace zetton {

@@ -41,7 +41,7 @@ struct Mat {
   void SetWidth(int w) { width = w; }
   void SetHeight(int h) { height = h; }
 
-  // Transfer the vision::Mat to FDTensor
+  // Transfer the vision::Mat to Tensor
   void ShareWithTensor(Tensor* tensor);
   // Only support copy to cpu tensor now
   bool CopyToTensor(Tensor* tensor);

@@ -11,14 +11,14 @@ namespace vision {
 TransformLibraryType BaseTransform::default_lib =
     TransformLibraryType::kDefault;
 
-bool BaseTransform::CpuRun(Mat* mat) {
-  AERROR_F("Unimplemented CpuRun.");
+bool BaseTransform::RunOnOpenCV(Mat* mat) {
+  AERROR_F("Unimplemented RunOnOpenCV.");
   return false;
 }
 
 #ifdef ENABLE_OPENCV_CUDA
-bool BaseTransform::GpuRun(Mat* mat) {
-  AERROR_F("Unimplemented GpuRun.");
+bool BaseTransform::RunOnOpenCVCUDA(Mat* mat) {
+  AERROR_F("Unimplemented RunOnOpenCVCUDA.");
   return false;
 }
 #endif
@@ -33,7 +33,7 @@ bool BaseTransform::operator()(Mat* mat, TransformLibraryType lib) {
 
   if (target == TransformLibraryType::kOpenCVCUDA) {
 #ifdef ENABLE_OPENCV_CUDA
-    bool ret = GpuRun(mat);
+    bool ret = RunOnOpenCVCUDA(mat);
     mat->device = InferenceDeviceType::kGPU;
     return ret;
 #else
@@ -42,7 +42,7 @@ bool BaseTransform::operator()(Mat* mat, TransformLibraryType lib) {
     return false;
 #endif
   }
-  bool ret = CpuRun(mat);
+  bool ret = RunOnOpenCV(mat);
   mat->device = InferenceDeviceType::kCPU;
   return ret;
 }

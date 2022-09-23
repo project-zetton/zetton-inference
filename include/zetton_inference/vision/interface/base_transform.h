@@ -8,7 +8,7 @@ namespace zetton {
 namespace inference {
 namespace vision {
 
-enum TransformLibraryType { kDefault, kOpenCVCPU, kOpenCVCUDA };
+enum TransformLibraryType { kDefault, kOpenCV, kOpenCVCUDA };
 
 class BaseTransform {
  public:
@@ -19,13 +19,13 @@ class BaseTransform {
   static TransformLibraryType default_lib;
 
   virtual std::string Name() = 0;
-  virtual bool CpuRun(Mat* mat);
+  virtual bool RunOnOpenCV(Mat* mat);
 #ifdef ENABLE_OPENCV_CUDA
-  virtual bool GpuRun(Mat* mat);
+  virtual bool RunOnOpenCVCUDA(Mat* mat);
 #endif
 
   virtual bool operator()(
-      Mat* mat, TransformLibraryType lib = TransformLibraryType::kOpenCVCPU);
+      Mat* mat, TransformLibraryType lib = TransformLibraryType::kOpenCV);
 };
 
 }  // namespace vision

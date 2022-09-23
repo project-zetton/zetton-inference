@@ -1,7 +1,6 @@
 #include "zetton_inference/base/runtime.h"
 
-#include <zetton_common/log/log.h>
-
+#include "zetton_common/log/log.h"
 #include "zetton_inference/interface/base_inference_backend.h"
 #include "zetton_inference/util/runtime_util.h"
 

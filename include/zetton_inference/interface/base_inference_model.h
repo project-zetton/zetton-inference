@@ -2,6 +2,7 @@
 
 #include <string>
 
+#include "zetton_inference/base/options.h"
 #include "zetton_inference/base/runtime.h"
 
 namespace zetton {
@@ -9,12 +10,15 @@ namespace inference {
 
 class BaseInferenceModel {
  public:
-  virtual bool InitRuntime();
-  virtual bool CreateCpuBackend();
-  virtual bool CreateGpuBackend();
+  virtual bool Init(const InferenceRuntimeOptions& options) = 0;
   virtual bool Infer(std::vector<Tensor>& input_tensors,
                      std::vector<Tensor>* output_tensors);
   virtual std::string Name() const { return "BaseInferenceModel"; }
+
+ public:
+  virtual bool InitRuntime();
+  virtual bool CreateCpuBackend();
+  virtual bool CreateGpuBackend();
 
  public:
   virtual int NumInputsOfRuntime() { return runtime_->NumInputs(); }
@@ -30,7 +34,7 @@ class BaseInferenceModel {
   }
 
  public:
-  InferenceRuntimeOptions runtime_option;
+  InferenceRuntimeOptions runtime_options;
   std::vector<InferenceBackendType> valid_cpu_backends = {
       InferenceBackendType::kONNXRuntime};
   std::vector<InferenceBackendType> valid_gpu_backends = {

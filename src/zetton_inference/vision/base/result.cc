@@ -2,15 +2,16 @@
 
 namespace zetton {
 namespace inference {
+namespace vision {
 
-void ClassificationVisionResult::Clear() {
+void ClassificationResult::Clear() {
   std::vector<int32_t>().swap(label_ids);
   std::vector<float>().swap(scores);
 }
 
-std::string ClassificationVisionResult::ToString() {
+std::string ClassificationResult::ToString() {
   std::string out;
-  out = "ClassificationVisionResult(\nlabel_ids: ";
+  out = "ClassificationResult(\nlabel_ids: ";
   for (int label_id : label_ids) {
     out += std::to_string(label_id) + ", ";
   }
@@ -22,34 +23,33 @@ std::string ClassificationVisionResult::ToString() {
   return out;
 }
 
-DetectionVisionResult::DetectionVisionResult(const DetectionVisionResult& res)
-    : BaseVisionResult(res) {
+DetectionResult::DetectionResult(const DetectionResult& res) : BaseResult(res) {
   boxes.assign(res.boxes.begin(), res.boxes.end());
   scores.assign(res.scores.begin(), res.scores.end());
   label_ids.assign(res.label_ids.begin(), res.label_ids.end());
 }
 
-void DetectionVisionResult::Clear() {
+void DetectionResult::Clear() {
   std::vector<std::array<float, 4>>().swap(boxes);
   std::vector<float>().swap(scores);
   std::vector<int32_t>().swap(label_ids);
 }
 
-void DetectionVisionResult::Reserve(int size) {
+void DetectionResult::Reserve(int size) {
   boxes.reserve(size);
   scores.reserve(size);
   label_ids.reserve(size);
 }
 
-void DetectionVisionResult::Resize(int size) {
+void DetectionResult::Resize(int size) {
   boxes.resize(size);
   scores.resize(size);
   label_ids.resize(size);
 }
 
-std::string DetectionVisionResult::ToString() {
+std::string DetectionResult::ToString() {
   std::string out;
-  out = "DetectionVisionResult: [xmin, ymin, xmax, ymax, score, label_id]\n";
+  out = "DetectionResult: [xmin, ymin, xmax, ymax, score, label_id]\n";
   for (size_t i = 0; i < boxes.size(); ++i) {
     out += std::to_string(boxes[i][0]) + "," + std::to_string(boxes[i][1]) +
            ", " + std::to_string(boxes[i][2]) + ", " +
@@ -60,5 +60,6 @@ std::string DetectionVisionResult::ToString() {
   return out;
 }
 
+}  // namespace vision
 }  // namespace inference
 }  // namespace zetton

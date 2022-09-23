@@ -1,7 +1,6 @@
 #include "zetton_inference/vision/base/transform/permute.h"
 
-#include <zetton_common/log/log.h>
-
+#include "zetton_common/log/log.h"
 #include "zetton_inference/base/type.h"
 #include "zetton_inference/vision/base/matrix.h"
 #include "zetton_inference/vision/interface/base_transform.h"

@@ -8,39 +8,41 @@
 namespace zetton {
 namespace inference {
 
-enum class VisionResultType {
+namespace vision {
+
+enum class ResultType {
   kUnknown,
   kClassification,
   kDetection,
   kTracking,
 };
 
-struct BaseVisionResult {
-  VisionResultType type = VisionResultType::kUnknown;
+struct BaseResult {
+  ResultType type = ResultType::kUnknown;
 };
 
-struct ClassificationVisionResult : public BaseVisionResult {
+struct ClassificationResult : public BaseResult {
  public:
   std::vector<int32_t> label_ids;
   std::vector<float> scores;
-  VisionResultType type = VisionResultType::kClassification;
+  ResultType type = ResultType::kClassification;
 
  public:
   void Clear();
   std::string ToString();
 };
 
-struct DetectionVisionResult : public BaseVisionResult {
+struct DetectionResult : public BaseResult {
  public:
   /// \brief bounding boxes (xmin, ymin, xmax, ymax)
   std::vector<std::array<float, 4>> boxes;
   std::vector<float> scores;
   std::vector<int32_t> label_ids;
-  VisionResultType type = VisionResultType::kDetection;
+  ResultType type = ResultType::kDetection;
 
  public:
-  DetectionVisionResult() {}
-  DetectionVisionResult(const DetectionVisionResult& res);
+  DetectionResult() {}
+  DetectionResult(const DetectionResult& res);
 
  public:
   void Clear();
@@ -49,5 +51,6 @@ struct DetectionVisionResult : public BaseVisionResult {
   std::string ToString();
 };
 
+}  // namespace vision
 }  // namespace inference
 }  // namespace zetton

@@ -1,9 +1,8 @@
 #include "zetton_inference/util/runtime_util.h"
 
-#include <zetton_common/log/log.h>
-
 #include <algorithm>
 
+#include "zetton_common/log/log.h"
 #include "zetton_inference/base/type.h"
 #include "zetton_inference/interface/base_inference_backend.h"
 
@@ -44,7 +43,9 @@ bool IsBackendAvailable(const InferenceBackendType& backend) {
 
 bool CheckModelFormat(const std::string& model_file,
                       const InferenceFrontendType& model_format) {
-  if (model_format == InferenceFrontendType::kONNX) {
+  if (model_format == InferenceFrontendType::kSerialized) {
+    //
+  } else if (model_format == InferenceFrontendType::kONNX) {
     if (model_file.size() < 5 ||
         model_file.substr(model_file.size() - 5, 5) != ".onnx") {
       AERROR_F(

@@ -1,7 +1,6 @@
 #include "zetton_inference/vision/base/transform/normalize.h"
 
-#include <zetton_common/log/log.h>
-
+#include "zetton_common/log/log.h"
 #include "zetton_inference/vision/interface/base_transform.h"
 
 namespace zetton {

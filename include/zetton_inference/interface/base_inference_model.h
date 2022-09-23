@@ -34,6 +34,19 @@ class BaseInferenceModel {
   }
 
  public:
+  virtual void EnableRecordTimeOfRuntime() {
+    time_of_runtime_.clear();
+    std::vector<double>().swap(time_of_runtime_);
+    enable_record_time_of_runtime_ = true;
+  }
+
+  virtual void DisableRecordTimeOfRuntime() {
+    enable_record_time_of_runtime_ = false;
+  }
+
+  virtual std::map<std::string, float> PrintStatisInfoOfRuntime();
+
+ public:
   InferenceRuntimeOptions runtime_options;
   std::vector<InferenceBackendType> valid_cpu_backends = {
       InferenceBackendType::kONNXRuntime};
@@ -46,6 +59,11 @@ class BaseInferenceModel {
   std::unique_ptr<InferenceRuntime> runtime_;
   bool runtime_initialized_ = false;
   bool debug_ = false;
+
+  /// \brief whether to record inference time
+  bool enable_record_time_of_runtime_ = false;
+  /// \brief record inference time for backend
+  std::vector<double> time_of_runtime_;
 };
 
 }  // namespace inference

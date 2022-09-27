@@ -10,7 +10,7 @@ namespace inference {
 bool ReadBinaryFromFile(const std::string& file, std::string* contents) {
   std::ifstream fin(file, std::ios::in | std::ios::binary);
   if (!fin.is_open()) {
-    AERROR_F("Failed to open file: {} to read.", file);
+    AERROR_F("Failed to open file: {}", file);
     return false;
   }
   fin.seekg(0, std::ios::end);

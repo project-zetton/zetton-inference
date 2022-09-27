@@ -49,9 +49,9 @@ bool CheckModelFormat(const std::string& model_file,
     if (model_file.size() < 5 ||
         model_file.substr(model_file.size() - 5, 5) != ".onnx") {
       AERROR_F(
-          "With model format of {}, the model file "
-          "should ends with `.onnx`, but now it's {}",
-          ToString(model_format), model_file);
+          "The model file is not a ONNX file since the file name does not "
+          "end with '.onnx': {}",
+          model_file);
       return false;
     }
   } else {
@@ -64,12 +64,11 @@ bool CheckModelFormat(const std::string& model_file,
 InferenceFrontendType GuessModelFormat(const std::string& model_file) {
   if (model_file.size() > 5 &&
       model_file.substr(model_file.size() - 5, 5) == ".onnx") {
-    AINFO_F("Model Format: ONNX.");
+    AINFO_F("The model file is a ONNX file: {}", model_file);
     return InferenceFrontendType::kONNX;
   }
 
-  AERROR_F(
-      "Cannot guess which model format you are using, please set manually.");
+  AERROR_F("Cannot guess the model format of the model file: {}", model_file);
   return InferenceFrontendType::kUnknown;
 }
 

@@ -17,42 +17,55 @@ class InferenceRuntimeOptions {
 
  public:
   /// \brief set path of model file and params file
+  /// \param model_path path of model file
+  /// \param params_path path of params file
+  /// \param input_model_format format of input model file
   void SetModelPath(const std::string& model_path,
                     const std::string& params_path = "",
-                    const std::string& model_format = "onnx");
+                    const std::string& input_model_format = "onnx");
 
   /// \brief set model inference in GPU
   void UseCpu();
   /// \brief set model inference in CPU
+  /// \param gpu_id id of GPU (or device)
   void UseGpu(int gpu_id = 0);
 
   /// \brief set number of thread while inference in CPU
+  /// \param thread_num number of thread
   void SetCpuThreadNum(int thread_num);
 
-  /// \brief use onnxruntime backend
+  /// \brief use ONNX Runtime backend
   void UseONNXRuntimeBackend();
-  /// \brief use tensorrt backend
+  /// \brief use TensorRT backend
   void UseTensorRTBackend();
-  /// \brief use openvino backend
+  /// \brief use NCNN backend
+  void UseNCNNBackend();
+  /// \brief use OpenVINO backend
   void UseOpenVINOBackend();
+  /// \brief use RKNN backend
+  void UseRKNNBackend();
 
-  /// \brief set TensorRT shape while the inputs of model contain dynamic shape
-  /// if opt_shape, max_shape are empty, they will keep same with the
+  /// \brief set input shape for TensorRT backend if the given model contains
+  /// dynamic shape
+  /// \details if opt_shape or max_shape are empty, they will keep same with the
   /// min_shape, which means the shape will be fixed as min_shape while
   /// inference
+  /// \param input_name name of input tensor
   /// \param min_shape the minimum shape
   /// \param opt_shape the most common shape while inference, default be empty
   /// \param max_shape the maximum shape, default be empty
-  void SetTensorRTInputShape(
+  void SetInputShapeForTensorRT(
       const std::string& input_name, const std::vector<int32_t>& min_shape,
       const std::vector<int32_t>& opt_shape = std::vector<int32_t>(),
       const std::vector<int32_t>& max_shape = std::vector<int32_t>());
-  /// \brief enable half precision (FP16) while use TensorRT backend
-  void EnableTensorRTFP16();
+  /// \brief enable half precision (FP16) for TensorRT backend
+  void EnableFP16ForTensorRT();
   /// \brief disable half precision (FP16) and change to full precision (FP32)
-  void DisableTensorRTFP16();
+  /// for TensorRT backend
+  void DisableFP16ForTensorRT();
   /// \brief set path of cache file while using TensorRT backend
-  void SetTensorRTCacheFile(const std::string& cache_file_path);
+  /// \param cache_path path of cache file (serialized engine)
+  void SetCacheFileForTensorRT(const std::string& cache_file_path);
 
  public:
   /// \brief format of input original model
@@ -71,18 +84,18 @@ class InferenceRuntimeOptions {
   /// their own default value)
   int cpu_thread_num = -1;
 
-  /// \brief Graph optimization level for ONNX Runtime model
-  /// -1 means use default value by ort
-  /// 0: ORT_DISABLE_ALL
-  /// 1: ORT_ENABLE_BASIC
-  /// 2: ORT_ENABLE_EXTENDED
-  /// 3: ORT_ENABLE_ALL
+  /// \brief Graph optimization level for ONNX Runtime model inference
+  /// \details -1: use default value of ONNX Runtime
+  /// 0: disable all optimizations
+  /// 1: enable basic optimizations
+  /// 2: enable extended optimizations
+  /// 3: enable all optimizations
   int ort_graph_opt_level = -1;
-  /// \brief Number of threads for ONNX Runtime model
+  /// \brief Number of threads for ONNX Runtime model inference
   int ort_inter_op_num_threads = -1;
-  /// \brief Execution mode for ONNX Runtime model
-  /// 0: ORT_SEQUENTIAL
-  /// 1: ORT_PARALLEL
+  /// \brief Execution mode for ONNX Runtime model inference
+  /// \details 0: sequential
+  /// 1: parallel
   int ort_execution_mode = -1;
 
   /// \brief maximum input tensor shape for TensorRT model inference

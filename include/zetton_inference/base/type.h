@@ -5,8 +5,10 @@
 namespace zetton {
 namespace inference {
 
-enum class InferenceDeviceType { kUnknwon = 0, kCPU, kGPU };
+/// \brief device type for model inference
+enum class InferenceDeviceType { kUnknwon = 0, kCPU, kGPU, kNPU };
 
+/// \brief data type for model inference
 enum class InferenceDataType {
   kUnknwon = 0,
   kBOOL,
@@ -20,6 +22,7 @@ enum class InferenceDataType {
   kFP64,
 };
 
+/// \brief backend framework for model inference
 enum class InferenceBackendType {
   kUnknown,
   kTensorRT,
@@ -29,6 +32,7 @@ enum class InferenceBackendType {
   kRKNN,
 };
 
+/// \brief frontend type (input model format) for model inference
 enum class InferenceFrontendType {
   kUnknown,
   kSerialized,
@@ -38,10 +42,16 @@ enum class InferenceFrontendType {
   // kTensorFlow,
 };
 
+/// \brief convert InferenceDeviceType to std::string
 std::string ToString(const InferenceDeviceType& device);
+/// \brief conevrt InferenceDataType to std::string
 std::string ToString(const InferenceDataType& dtype);
+/// \brief convert InferenceBackendType to std::string
 std::string ToString(const InferenceBackendType& backend);
+/// \brief convert InferenceFrontendType to std::string
 std::string ToString(const InferenceFrontendType& frontend);
+
+/// \brief get byte size of InferenceDataType
 int32_t InferenceDataTypeSize(const InferenceDataType& dtype);
 
 }  // namespace inference

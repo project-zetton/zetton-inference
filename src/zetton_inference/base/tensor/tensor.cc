@@ -26,7 +26,7 @@ Tensor::Tensor(const Tensor& other)
     buffer_ = nullptr;
   } else {
     size_t nbytes = Nbytes();
-    ACHECK_F(ReallocFn(nbytes), "Tensor allocate memory error");
+    ACHECK_F(ReallocFn(nbytes), "Failed to allocate memory for tensor.");
     CopyBuffer(buffer_, other.buffer_, nbytes);
   }
 }
@@ -112,18 +112,18 @@ const void* Tensor::CpuData() const {
     if (external_data_ptr != nullptr) {
       ACHECK_F(cudaMemcpy(cpu_ptr->data(), external_data_ptr, Nbytes(),
                           cudaMemcpyDeviceToHost) == 0,
-               "[ERROR] Error occurs while copy memory from GPU to CPU");
+               "Failed to copy memory from GPU to CPU.");
 
     } else {
       ACHECK_F(cudaMemcpy(cpu_ptr->data(), buffer_, Nbytes(),
                           cudaMemcpyDeviceToHost) == 0,
-               "[ERROR] Error occurs while buffer copy memory from GPU to CPU");
+               "Failed to copy memory from GPU to CPU.");
     }
     return cpu_ptr->data();
 #else
     AFATAL_F(
-        "The code didn't compile under -DUSE_GPU=ON, so this is an unexpected "
-        "problem happend.");
+        "Definition USE_GPU is not set and this operation may cause undefined "
+        "behavior.");
 #endif
   }
   return Data();
@@ -142,7 +142,7 @@ void Tensor::SetExternalData(const std::vector<int64_t>& new_shape,
 void Tensor::ExpandDim(int64_t axis) {
   size_t ndim = shape.size();
   ACHECK_F(axis >= 0 && axis <= static_cast<int64_t>(ndim),
-           "The allowed 'axis' must be in range of (0, {})!", ndim);
+           "Invalid axis {} for ndim: {}.", axis, ndim);
   shape.insert(shape.begin() + axis, 1);
 }
 
@@ -155,7 +155,7 @@ void Tensor::Allocate(const std::vector<int64_t>& new_shape,
   shape.assign(new_shape.begin(), new_shape.end());
   device = new_device;
   size_t nbytes = Nbytes();
-  ACHECK_F(ReallocFn(nbytes), "Tensor allocate cpu memory error");
+  ACHECK_F(ReallocFn(nbytes), "Failed to allocate memory for tensor.");
 }
 
 int Tensor::Nbytes() const { return Numel() * InferenceDataTypeSize(dtype); }
@@ -210,7 +210,7 @@ void CalculateTensorStats(void* src_ptr, int size, double* mean, double* max,
   *mean = *mean / size;
 }
 
-void Tensor::PrintInfo(const std::string& prefix) {
+void Tensor::Print(const std::string& prefix) {
   double mean = 0;
   double max = -99999999;
   double min = 99999999;
@@ -227,9 +227,7 @@ void Tensor::PrintInfo(const std::string& prefix) {
   } else if (dtype == InferenceDataType::kINT64) {
     CalculateTensorStats<int64_t>(Data(), Numel(), &mean, &max, &min);
   } else {
-    AFATAL_F(
-        "PrintInfo function doesn't support current situation, maybe you "
-        "need enhance this function now.");
+    AFATAL_F("Unsupported data type: {}.", ToString(dtype));
   }
   AINFO_F("{}: name={}, shape={}, dtype={}, mean={}, max={}, min={}", prefix,
           name, absl::StrJoin(shape, " "), ToString(dtype), mean, max, min);
@@ -248,8 +246,8 @@ bool Tensor::ReallocFn(size_t nbytes) {
     return buffer_ != nullptr;
 #else
     AFATAL_F(
-        "The code didn't compile under -DUSE_GPU=ON, so this is an unexpected "
-        "problem happend.");
+        "Definition USE_GPU is not set and this operation may cause "
+        "undefined behavior.");
 #endif
   }
   buffer_ = realloc(buffer_, nbytes);
@@ -274,12 +272,12 @@ void Tensor::CopyBuffer(void* dst, const void* src, size_t nbytes) {
   if (device == InferenceDeviceType::kGPU) {
 #ifdef USE_GPU
     ACHECK_F(cudaMemcpy(dst, src, nbytes, cudaMemcpyDeviceToDevice) == 0,
-             "[ERROR] Error occurs while copy memory from GPU to GPU");
+             "Failed to copy data from device to device.");
 
 #else
     AFATAL_F(
-        "The code didn't compile under -DUSE_GPU=ON, so copying gpu "
-        "buffer is an unexpected problem happend.");
+        "Definition USE_GPU is not set and this operation may cause "
+        "undefined behavior.");
 #endif
   } else {
     std::memcpy(dst, src, nbytes);

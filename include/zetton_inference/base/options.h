@@ -19,7 +19,7 @@ class InferenceRuntimeOptions {
   /// \brief set path of model file and params file
   void SetModelPath(const std::string& model_path,
                     const std::string& params_path = "",
-                    const std::string& model_format = "tensorrt");
+                    const std::string& model_format = "onnx");
 
   /// \brief set model inference in GPU
   void UseCpu();

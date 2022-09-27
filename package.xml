@@ -10,9 +10,7 @@
   <author>Yusu Pan</author>
 
   <buildtool_depend>cmake</buildtool_depend>
-  <depend>yolo_trt</depend>
   <depend>zetton_common</depend>
-  <depend>zetton_stream</depend>
 
   <export>
     <build_type>cmake</build_type>

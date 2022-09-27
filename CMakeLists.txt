@@ -47,15 +47,17 @@ project(
 find_package(Threads)
 find_package(Eigen3 REQUIRED)
 find_package(OpenCV 4 REQUIRED)
-find_package(yolo_trt REQUIRED)
 
 # ---------------#
 # CUDA libraries #
 # ---------------#
 
-set(USE_GPU ON CACHE BOOL "Use GPU")
+set(USE_GPU
+    ON
+    CACHE BOOL "Use GPU")
 if(USE_GPU)
   add_definitions(-DUSE_GPU=1)
+  find_package(CUDA REQUIRED)
   find_package(CUDAToolkit REQUIRED)
 else()
   add_definitions(-DUSE_GPU=0)
@@ -66,7 +68,6 @@ endif()
 # -----------------#
 
 find_package(zetton_common REQUIRED)
-find_package(zetton_stream REQUIRED)
 
 # =========#
 # Settings #
@@ -138,16 +139,14 @@ zetton_cc_library(
   INCLUDES
   ${OpenCV_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIR}
+  ${CUDA_TOOLKIT_ROOT_DIR}/include
+  ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
   DEPS
   ${EXTRA_LIBRARIES}
   ${OpenCV_LIBS}
   Threads::Threads
   Eigen3::Eigen
-  yolo_trt::yolo_trt
-  zetton_common::zetton_common
-  zetton_stream::zetton_stream
-  # zetton_inference::zetton_inference
-)
+  zetton_common::zetton_common)
 
 # -------------------#
 # Executable targets #

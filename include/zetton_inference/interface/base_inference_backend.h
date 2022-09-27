@@ -5,9 +5,9 @@
 #include <vector>
 
 #include "zetton_common/util/registerer.h"
+#include "zetton_inference/base/options.h"
 #include "zetton_inference/base/tensor/tensor.h"
 #include "zetton_inference/base/tensor/tensor_info.h"
-#include "zetton_inference/base/options.h"
 
 namespace zetton {
 namespace inference {

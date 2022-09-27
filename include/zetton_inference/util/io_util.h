@@ -1,4 +1,4 @@
-#pragma arguments
+#pragma once
 
 #include <string>
 

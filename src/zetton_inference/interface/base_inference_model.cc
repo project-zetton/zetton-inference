@@ -156,28 +156,29 @@ bool BaseInferenceModel::Infer(std::vector<Tensor>& input_tensors,
   return ret;
 }
 
-std::map<std::string, float> BaseInferenceModel::PrintStatisInfoOfRuntime() {
-  std::map<std::string, float> statis_info_of_runtime_dict;
+std::map<std::string, double> BaseInferenceModel::PrintStatsInfoOfRuntime() {
+  std::map<std::string, double> stats_info_of_runtime_dict;
 
   if (time_of_runtime_.size() < 10) {
     AWARN_F(
-        "PrintStatisInfoOfRuntime require the runtime ran 10 times at "
+        "PrintStatsInfoOfRuntime require the runtime ran 10 times at "
         "least, but now you only ran {} times.",
         time_of_runtime_.size());
   }
   double warmup_time = 0.0;
   double remain_time = 0.0;
-  int warmup_iter = time_of_runtime_.size() / 5;
-  for (size_t i = 0; i < time_of_runtime_.size(); ++i) {
+  std::size_t warmup_iter = time_of_runtime_.size() / 5;
+  for (std::size_t i = 0; i < time_of_runtime_.size(); ++i) {
     if (i < warmup_iter) {
       warmup_time += time_of_runtime_[i];
     } else {
       remain_time += time_of_runtime_[i];
     }
   }
-  double avg_time = remain_time / (time_of_runtime_.size() - warmup_iter);
+  double avg_time =
+      remain_time / static_cast<double>(time_of_runtime_.size() - warmup_iter);
 
-  AINFO_F("============= Runtime Statis Info({}) =============", Name());
+  AINFO_F("============= Runtime Stats Info({}) =============", Name());
   AINFO_F("Total iterations: {}", time_of_runtime_.size());
   AINFO_F("Total time of runtime: {}s.", warmup_time + remain_time);
   AINFO_F("Warmup iterations: {}.", warmup_iter);
@@ -185,14 +186,15 @@ std::map<std::string, float> BaseInferenceModel::PrintStatisInfoOfRuntime() {
   AINFO_F("Average time of runtime exclude warmup step: {}ms.",
           avg_time * 1000);
 
-  statis_info_of_runtime_dict["total_time"] = warmup_time + remain_time;
-  statis_info_of_runtime_dict["warmup_time"] = warmup_time;
-  statis_info_of_runtime_dict["remain_time"] = remain_time;
-  statis_info_of_runtime_dict["warmup_iter"] = warmup_iter;
-  statis_info_of_runtime_dict["avg_time"] = avg_time;
-  statis_info_of_runtime_dict["iterations"] = time_of_runtime_.size();
+  stats_info_of_runtime_dict["total_time"] = warmup_time + remain_time;
+  stats_info_of_runtime_dict["warmup_time"] = warmup_time;
+  stats_info_of_runtime_dict["remain_time"] = remain_time;
+  stats_info_of_runtime_dict["warmup_iter"] = static_cast<double>(warmup_iter);
+  stats_info_of_runtime_dict["avg_time"] = avg_time;
+  stats_info_of_runtime_dict["iterations"] =
+      static_cast<double>(time_of_runtime_.size());
 
-  return statis_info_of_runtime_dict;
+  return stats_info_of_runtime_dict;
 }
 
 }  // namespace inference

@@ -44,7 +44,7 @@ class BaseInferenceModel {
     enable_record_time_of_runtime_ = false;
   }
 
-  virtual std::map<std::string, float> PrintStatisInfoOfRuntime();
+  virtual std::map<std::string, double> PrintStatsInfoOfRuntime();
 
  public:
   InferenceRuntimeOptions runtime_options;

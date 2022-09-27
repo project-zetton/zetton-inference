@@ -10,9 +10,8 @@ namespace vision {
 Normalize::Normalize(const std::vector<float>& alpha,
                      const std::vector<float>& beta) {
   ACHECK_F(alpha.size() == beta.size(),
-           "Normalize: requires the size of alpha equal to the size of beta.");
-  ACHECK_F(alpha.size() != 0,
-           "Normalize: requires the size of alpha and beta > 0.");
+           "alpha and beta must have the same size");
+  ACHECK_F(alpha.size() != 0, "alpha and beta must have at least one element");
   alpha_.assign(alpha.begin(), alpha.end());
   beta_.assign(beta.begin(), beta.end());
 }

@@ -30,8 +30,9 @@ bool Interpolate::RunOnOpenCV(Mat* mat) {
     cv::resize(*im, *im, cv::Size(0, 0), scale_w_, scale_h_, interp_);
   } else {
     AERROR_F(
-        "Resize: the parameters must satisfy (width > 0 && height > 0) or "
-        "(scale_w > 0 && scale_h > 0).");
+        "Invalid resize parameters (width={}, height={}, scale_w={}, "
+        "scale_h={})",
+        width_, height_, scale_w_, scale_h_);
     return false;
   }
   mat->SetWidth(im->cols);
@@ -60,8 +61,9 @@ bool Interpolate::RunOnOpenCVCUDA(Mat* mat) {
     cv::cuda::resize(*im, *im, cv::Size(0, 0), scale_w_, scale_h_, interp_);
   } else {
     AERROR_F(
-        "Resize: the parameters must satisfy (width > 0 && height > 0) or "
-        "(scale_w > 0 && scale_h > 0).");
+        "Invalid resize parameters (width={}, height={}, scale_w={}, "
+        "scale_h={})",
+        width_, height_, scale_w_, scale_h_);
     return false;
   }
   mat->SetWidth(im->cols);

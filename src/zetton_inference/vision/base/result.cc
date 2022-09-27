@@ -1,5 +1,8 @@
 #include "zetton_inference/vision/base/result.h"
 
+#include <absl/strings/str_join.h>
+#include <fmt/format.h>
+
 namespace zetton {
 namespace inference {
 namespace vision {
@@ -10,16 +13,10 @@ void ClassificationResult::Clear() {
 }
 
 std::string ClassificationResult::ToString() {
-  std::string out;
-  out = "ClassificationResult(\nlabel_ids: ";
-  for (int label_id : label_ids) {
-    out += std::to_string(label_id) + ", ";
+  std::string out = "ClassificationResult: [label_id, score]\n";
+  for (size_t i = 0; i < label_ids.size(); ++i) {
+    out += fmt::format("-> [{}, {}]\n", label_ids[i], scores[i]);
   }
-  out += "\nscores: ";
-  for (float score : scores) {
-    out += std::to_string(score) + ", ";
-  }
-  out += "\n)";
   return out;
 }
 
@@ -48,14 +45,12 @@ void DetectionResult::Resize(int size) {
 }
 
 std::string DetectionResult::ToString() {
-  std::string out;
-  out = "DetectionResult: [xmin, ymin, xmax, ymax, score, label_id]\n";
+  std::string out =
+      "DetectionResult: [xmin, ymin, xmax, ymax, score, label_id]\n";
   for (size_t i = 0; i < boxes.size(); ++i) {
-    out += std::to_string(boxes[i][0]) + "," + std::to_string(boxes[i][1]) +
-           ", " + std::to_string(boxes[i][2]) + ", " +
-           std::to_string(boxes[i][3]) + ", " + std::to_string(scores[i]) +
-           ", " + std::to_string(label_ids[i]);
-    out += "\n";
+    out +=
+        fmt::format("-> [{}, {}, {}, {}, {}, {}]\n", boxes[i][0], boxes[i][1],
+                    boxes[i][2], boxes[i][3], scores[i], label_ids[i]);
   }
   return out;
 }

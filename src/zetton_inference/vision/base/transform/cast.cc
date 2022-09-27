@@ -19,7 +19,7 @@ bool Cast::RunOnOpenCV(Mat* mat) {
       im->convertTo(*im, CV_64FC(c));
     }
   } else {
-    AWARN_F("Cast not support for {} now! will skip this operation.", dtype_);
+    AWARN_F("Unsupported data type: {}", dtype_);
   }
   return true;
 }
@@ -37,7 +37,7 @@ bool Cast::RunOnOpenCVCUDA(Mat* mat) {
       im->convertTo(*im, CV_64FC(c));
     }
   } else {
-    AWARN_F("Cast not support for {} now! will skip this operation.", dtype_);
+    AWARN_F("Unsupported data type: {}", dtype_);
   }
   return true;
 }

@@ -10,18 +10,17 @@ namespace vision {
 
 bool Pad::RunOnOpenCV(Mat* mat) {
   if (mat->layout != TensorLayoutType::kHWC) {
-    AERROR_F("Pad: The input data must be Layout::HWC format!");
+    AERROR_F("Invalid input format: {}", ToString(mat->layout));
     return false;
   }
   if (mat->Channels() > 4) {
-    AERROR_F("Pad: Only support channels <= 4.");
+    AERROR_F("Invalid input channels: {}", mat->Channels());
     return false;
   }
   if (mat->Channels() != static_cast<int>(value_.size())) {
     AERROR_F(
-        "Pad: Require input channels equals to size of padding value, "
-        "but now channels = {}, the size of padding values = {}.",
-        mat->Channels(), value_.size());
+        "The number of values ({}) is not equal to the number of channels ({})",
+        value_.size(), mat->Channels());
     return false;
   }
   cv::Mat* im = mat->GetCpuMat();
@@ -45,18 +44,17 @@ bool Pad::RunOnOpenCV(Mat* mat) {
 #ifdef ENABLE_OPENCV_CUDA
 bool Pad::GpuRun(Mat* mat) {
   if (mat->layout != TensorLayoutType::kHWC) {
-    AERROR_F("Pad: The input data must be Layout::HWC format!");
+    AERROR_F("Invalid input format: {}", ToString(mat->layout));
     return false;
   }
   if (mat->Channels() > 4) {
-    AERROR_F("Pad: Only support channels <= 4.");
+    AERROR_F("Invalid input channels: {}", mat->Channels());
     return false;
   }
   if (mat->Channels() != value_.size()) {
     AERROR_F(
-        "Pad: Require input channels equals to size of padding value, "
-        "but now channels = {}, the size of padding values = {}.",
-        mat->Channels(), value_.size());
+        "The number of values ({}) is not equal to the number of channels ({})",
+        value_.size(), mat->Channels());
     return false;
   }
   cv::cuda::GpuMat* im = mat->GetGpuMat();

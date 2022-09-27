@@ -11,13 +11,13 @@ TransformLibraryType BaseTransform::default_lib =
     TransformLibraryType::kDefault;
 
 bool BaseTransform::RunOnOpenCV(Mat* mat) {
-  AERROR_F("Unimplemented RunOnOpenCV.");
+  AERROR_F("Transform {} is not implemented on OpenCV", Name());
   return false;
 }
 
 #ifdef ENABLE_OPENCV_CUDA
 bool BaseTransform::RunOnOpenCVCUDA(Mat* mat) {
-  AERROR_F("Unimplemented RunOnOpenCVCUDA.");
+  AERROR_F("Transform {} is not implemented on OpenCV CUDA", Name());
   return false;
 }
 #endif
@@ -36,8 +36,7 @@ bool BaseTransform::operator()(Mat* mat, TransformLibraryType lib) {
     mat->device = InferenceDeviceType::kGPU;
     return ret;
 #else
-    AERROR_F(
-        "OpenCV is not compiled with CUDA, cannot process image with CUDA.");
+    AERROR_F("OpenCV CUDA is not enabled");
     return false;
 #endif
   }

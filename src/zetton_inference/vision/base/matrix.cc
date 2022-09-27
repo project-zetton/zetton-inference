@@ -9,6 +9,17 @@ namespace zetton {
 namespace inference {
 namespace vision {
 
+std::string ToString(TensorLayoutType type) {
+  switch (type) {
+    case TensorLayoutType::kCHW:
+      return "CHW";
+    case TensorLayoutType::kHWC:
+      return "HWC";
+    default:
+      return "Unknown";
+  }
+}
+
 #ifdef ENABLE_OPENCV_CUDA
 cv::cuda::GpuMat* Mat::GetGpuMat() {
   if (device == InferenceDeviceType::kCPU) {
@@ -48,17 +59,15 @@ bool Mat::CopyToTensor(Tensor* tensor) {
   cv::Mat* im = GetCpuMat();
   int total_bytes = im->total() * im->elemSize();
   if (total_bytes != tensor->Nbytes()) {
-    AERROR_F(
-        "While copy Mat to Tensor, requires the memory size be same, "
-        "but now size of Tensor = {}, size of Mat = {}.",
-        tensor->Nbytes(), total_bytes);
+    AERROR_F("The size of the matrix ({}) is not equal to the tensor ({})",
+             total_bytes, tensor->Nbytes());
     return false;
   }
   memcpy(tensor->MutableData(), im->ptr(), im->total() * im->elemSize());
   return true;
 }
 
-void Mat::PrintInfo(const std::string& flag) {
+void Mat::Print(const std::string& flag) {
   cv::Mat* im = GetCpuMat();
   cv::Scalar mean = cv::mean(*im);
   std::vector<double> mean_vec;
@@ -79,9 +88,7 @@ InferenceDataType Mat::Type() {
     type = cpu_mat.type();
   }
   if (type < 0) {
-    AFATAL_F(
-        "While calling Mat::Type(), get negative value, which is not "
-        "expected!.");
+    AFATAL_F("The type of the matrix is invalid: {}", type);
   }
   type = type % 8;
   if (type == 0) {
@@ -89,9 +96,7 @@ InferenceDataType Mat::Type() {
   } else if (type == 1) {
     return InferenceDataType::kINT8;
   } else if (type == 2) {
-    AFATAL_F(
-        "While calling Mat::Type(), get UINT16 type which is not "
-        "supported now.");
+    AFATAL_F("The type of the matrix is invalid: {}", type);
   } else if (type == 3) {
     return InferenceDataType::kINT16;
   } else if (type == 4) {
@@ -101,9 +106,7 @@ InferenceDataType Mat::Type() {
   } else if (type == 6) {
     return InferenceDataType::kFP64;
   } else {
-    AFATAL_F(
-        "While calling Mat::Type(), get type = {}, which is not expected!.",
-        type);
+    AFATAL_F("The type of the matrix is invalid: {}", type);
   }
 
   return InferenceDataType::kUnknwon;

@@ -32,11 +32,11 @@ Example: `zetton-inference-tensorrt/examples/run_yolov7_end2end.cc`
 
 Notes:
 
-- YOLOX models adopt BGR images in `[0,255]` by default, according to [this issue](https://github.com/Linaom1214/TensorRT-For-YOLO-Series/issues/11), so we need to disable these transforms in preprocessing. Remember to explicitly declare the model type in the `Predict` method.
+- YOLOX models adopt BGR images in `[0,255]` by default, according to [this issue](https://github.com/Linaom1214/TensorRT-For-YOLO-Series/issues/11), so we need to disable these transforms in preprocessing. Remember to explicitly declare the model type in the `Init` method.
 
    ```cpp
-   detector->Predict(&image, &result, 0.25,
-                     zetton::inference::vision::YOLOEnd2EndModelType::kYOLOX);
+   detector->Init(options,
+                  zetton::inference::vision::YOLOEnd2EndModelType::kYOLOX);
    ```
 
 ## Acknowledgements

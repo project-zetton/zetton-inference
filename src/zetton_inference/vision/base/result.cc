@@ -55,6 +55,16 @@ std::string DetectionResult::ToString() {
   return out;
 }
 
+ReIDResult::ReIDResult(const ReIDResult& res) : BaseResult(res) {
+  features.assign(res.features.begin(), res.features.end());
+}
+
+void ReIDResult::Clear() { std::vector<std::vector<float>>().swap(features); }
+
+void ReIDResult::Reserve(int size) { features.reserve(size); }
+
+void ReIDResult::Resize(int size) { features.resize(size); }
+
 }  // namespace vision
 }  // namespace inference
 }  // namespace zetton

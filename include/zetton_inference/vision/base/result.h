@@ -60,15 +60,15 @@ struct DetectionResult : public BaseResult {
 
  public:
   /// \brief clear the result
-  void Clear();
+  virtual void Clear();
   /// \brief reserve memory for the result
   /// \param num number of detection results
-  void Reserve(int size);
+  virtual void Reserve(int size);
   /// \brief resize the result
   /// \param num number of detection results
-  void Resize(int size);
+  virtual void Resize(int size);
   /// \brief convert the result to string
-  std::string ToString();
+  virtual std::string ToString();
 };
 
 /// \brief ReID result from vision model
@@ -94,6 +94,33 @@ struct ReIDResult : public BaseResult {
   /// \brief resize the result
   /// \param num number of ReID results
   void Resize(int size);
+};
+
+/// \brief Tracking result from vision model
+struct TrackingResult : public DetectionResult {
+ public:
+  /// \brief extracted features from ReID model
+  std::vector<std::vector<float>> features;
+  /// \brief tracking id
+  int32_t tracking_id = -1;
+
+ public:
+  /// \brief default constructor
+  TrackingResult();
+  /// \brief copy the result from another tracking result
+  TrackingResult(const TrackingResult& res);
+
+ public:
+  /// \brief clear the result
+  void Clear() override;
+  /// \brief reserve memory for the result
+  /// \param num number of detection results
+  void Reserve(int size) override;
+  /// \brief resize the result
+  /// \param num number of detection results
+  void Resize(int size) override;
+  /// \brief convert the result to string
+  std::string ToString() override;
 };
 
 }  // namespace vision

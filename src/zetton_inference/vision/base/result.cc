@@ -65,6 +65,41 @@ void ReIDResult::Reserve(int size) { features.reserve(size); }
 
 void ReIDResult::Resize(int size) { features.resize(size); }
 
+TrackingResult::TrackingResult() : DetectionResult() {
+  type = ResultType::kTracking;
+}
+
+TrackingResult::TrackingResult(const TrackingResult& res)
+    : DetectionResult(res) {
+  features.assign(res.features.begin(), res.features.end());
+}
+
+void TrackingResult::Clear() {
+  DetectionResult::Clear();
+  std::vector<std::vector<float>>().swap(features);
+}
+
+void TrackingResult::Reserve(int size) {
+  DetectionResult::Reserve(size);
+  features.reserve(size);
+}
+
+void TrackingResult::Resize(int size) {
+  DetectionResult::Resize(size);
+  features.resize(size);
+}
+
+std::string TrackingResult::ToString() {
+  std::string out =
+      "Tracking: [tracking_id, xmin, ymin, xmax, ymax, score, label_id]\n";
+  for (size_t i = 0; i < boxes.size(); ++i) {
+    out += fmt::format("-> [{}, {}, {}, {}, {}, {}, {}]\n", tracking_id,
+                       boxes[i][0], boxes[i][1], boxes[i][2], boxes[i][3],
+                       scores[i], label_ids[i]);
+  }
+  return out;
+}
+
 }  // namespace vision
 }  // namespace inference
 }  // namespace zetton

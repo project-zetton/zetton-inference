@@ -20,8 +20,8 @@ KalmanFilter::KalmanFilter(const float &std_weight_position,
   }
 }
 
-void KalmanFilter::initiate(StateMean &mean, StateCov &covariance,
-                            const DetectBox &measurement) {
+void KalmanFilter::Init(StateMean &mean, StateCov &covariance,
+                        const DetectBox &measurement) {
   // mean.block<1, 4>(0, 0) = measurement.block<1, 4>(0, 0);
   // mean.block<1, 4>(0, 4) = Eigen::Vector4f::Zero();
   mean << measurement[0], measurement[1], measurement[2], measurement[3], 0, 0,
@@ -41,7 +41,7 @@ void KalmanFilter::initiate(StateMean &mean, StateCov &covariance,
   covariance = tmp.asDiagonal();
 }
 
-void KalmanFilter::predict(StateMean &mean, StateCov &covariance) {
+void KalmanFilter::Predict(StateMean &mean, StateCov &covariance) {
   StateMean std;
   std(0) = std_weight_position_ * mean(3);
   std(1) = std_weight_position_ * mean(3);
@@ -60,11 +60,11 @@ void KalmanFilter::predict(StateMean &mean, StateCov &covariance) {
       motion_mat_ * covariance * (motion_mat_.transpose()) + motion_cov;
 }
 
-void KalmanFilter::update(StateMean &mean, StateCov &covariance,
+void KalmanFilter::Update(StateMean &mean, StateCov &covariance,
                           const DetectBox &measurement) {
   StateHMean projected_mean;
   StateHCov projected_cov;
-  project(projected_mean, projected_cov, mean, covariance);
+  Project(projected_mean, projected_cov, mean, covariance);
 
   Eigen::Matrix<float, 4, 8> B =
       (covariance * (update_mat_.transpose())).transpose();
@@ -82,7 +82,7 @@ void KalmanFilter::update(StateMean &mean, StateCov &covariance,
       covariance - kalman_gain * projected_cov * (kalman_gain.transpose());
 }
 
-void KalmanFilter::project(StateHMean &projected_mean,
+void KalmanFilter::Project(StateHMean &projected_mean,
                            StateHCov &projected_covariance,
                            const StateMean &mean, const StateCov &covariance) {
   DetectBox std = {std_weight_position_ * mean(3),

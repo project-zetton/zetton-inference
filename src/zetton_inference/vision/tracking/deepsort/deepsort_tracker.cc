@@ -39,7 +39,7 @@ void DeepSORTTracker::Update(const DetectionResult &detections,
   // check predicted tracks from kalman filter
   TrackingResult predict_boxes;
   for (auto it = kalman_boxes_.begin(); it != kalman_boxes_.end();) {
-    std::array<float, 4> pBox = (*it).Predict();
+    auto pBox = (*it).Predict();
 
     // check if the predicted track is NaN
     bool is_nan = (std::isnan(pBox[0])) || (std::isnan(pBox[1])) ||
@@ -79,27 +79,26 @@ void DeepSORTTracker::Update(const DetectionResult &detections,
   for (auto &assigned_pair : assigned_pairs) {
     int trk_id = assigned_pair.x;
     int det_id = assigned_pair.y;
-    std::array<float, 4> rect_box = tracking_results.boxes[det_id];
-    kalman_boxes_[trk_id].Update(rect_box, tracking_results.label_ids[det_id],
-                                 tracking_results.scores[det_id],
-                                 tracking_results.features[det_id]);
+    kalman_boxes_[trk_id].Update(
+        tracking_results.boxes[det_id], tracking_results.label_ids[det_id],
+        tracking_results.scores[det_id], tracking_results.features[det_id]);
     tracking_results.tracking_ids[det_id] = kalman_boxes_[trk_id].m_id;
   }
 
   // create new tracks for unassigned detection results
   for (auto umd : unassigned_detections) {
-    std::array<float, 4> rect_box = tracking_results.boxes[umd];
-    auto tracker =
-        deepsort::KalmanTracker(rect_box, tracking_results.label_ids[umd],
-                                tracking_results.scores[umd]);
+    auto tracker = deepsort::KalmanTracker(tracking_results.boxes[umd],
+                                           tracking_results.label_ids[umd],
+                                           tracking_results.scores[umd]);
     tracking_results.tracking_ids[umd] = tracker.m_id;
     tracker.m_feature = tracking_results.features[umd].clone();
     kalman_boxes_.push_back(tracker);
   }
 }
 
-float DeepSORTTracker::IOUCalculate(const std::array<float, 4> &det_a,
-                                    const std::array<float, 4> &det_b) {
+float DeepSORTTracker::IOUCalculate(
+    const deepsort::KalmanTracker::StateType &det_a,
+    const deepsort::KalmanTracker::StateType &det_b) {
   cv::Point2f center_a((det_a[0] + det_a[2]) / 2, (det_a[1] + det_b[3]) / 2);
   cv::Point2f center_b((det_b[0] + det_b[2]) / 2, (det_b[1] + det_b[3]) / 2);
   cv::Point2f left_up(std::min(det_a[0], det_b[0]),

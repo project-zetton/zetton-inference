@@ -32,8 +32,8 @@ class DeepSORTTracker {
   DeepSORTTrackerParams params;
 
  private:
-  static float IOUCalculate(const std::array<float, 4> &det_a,
-                            const std::array<float, 4> &det_b);
+  static float IOUCalculate(const deepsort::KalmanTracker::StateType &det_a,
+                            const deepsort::KalmanTracker::StateType &det_b);
   void Alignment(std::vector<std::vector<double>> mat,
                  std::set<int> &unmatchedDetections,
                  std::set<int> &unmatchedTrajectories,

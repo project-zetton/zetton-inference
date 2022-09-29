@@ -13,9 +13,11 @@ namespace deepsort {
 // observed as bounding box.
 class KalmanTracker {
  public:
+  using StateType = std::array<float, 4>;
+
   /// \brief constructor
   KalmanTracker() {
-    init_kf(std::array<float, 4>());
+    init_kf(StateType());
     m_time_since_update = 0;
     m_hits = 0;
     m_hit_streak = 0;
@@ -27,7 +29,7 @@ class KalmanTracker {
   }
 
   /// \brief constructor with bounding box
-  KalmanTracker(std::array<float, 4> initRect, int classes, float prob) {
+  KalmanTracker(StateType initRect, int classes, float prob) {
     init_kf(initRect);
     m_time_since_update = 0;
     m_hits = 0;
@@ -43,18 +45,18 @@ class KalmanTracker {
   ~KalmanTracker() { m_history.clear(); }
 
   /// \brief predict the estimated bounding box
-  std::array<float, 4> Predict();
+  StateType Predict();
 
   /// \brief update the state vector with observed bounding box
-  void Update(std::array<float, 4> stateMat, int classes, float prob,
+  void Update(StateType stateMat, int classes, float prob,
               const cv::Mat& feature);
 
  public:
   /// \brief get the current state vector
-  std::array<float, 4> GetState();
+  StateType GetState();
 
   /// \brief convert bounding box from [cx,cy,s,r] to [x,y,w,h] style
-  std::array<float, 4> GetBoxFromXYSR(float cx, float cy, float s, float r);
+  StateType GetBoxFromXYSR(float cx, float cy, float s, float r);
 
  public:
   static int kf_count;
@@ -69,12 +71,12 @@ class KalmanTracker {
   cv::Mat m_feature;
 
  private:
-  void init_kf(std::array<float, 4> stateMat);
+  void init_kf(StateType stateMat);
 
   cv::KalmanFilter kf;
   cv::Mat measurement;
 
-  std::vector<std::array<float, 4>> m_history;
+  std::vector<StateType> m_history;
 };
 
 }  // namespace deepsort

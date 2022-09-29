@@ -7,8 +7,7 @@
 namespace zetton {
 namespace inference {
 namespace vision {
-
-#define StateType std::array<float, 4>
+namespace deepsort {
 
 // This class represents the internel state of individual tracked objects
 // observed as bounding box.
@@ -16,7 +15,7 @@ class KalmanTracker {
  public:
   /// \brief constructor
   KalmanTracker() {
-    init_kf(StateType());
+    init_kf(std::array<float, 4>());
     m_time_since_update = 0;
     m_hits = 0;
     m_hit_streak = 0;
@@ -28,7 +27,7 @@ class KalmanTracker {
   }
 
   /// \brief constructor with bounding box
-  KalmanTracker(StateType initRect, int classes, float prob) {
+  KalmanTracker(std::array<float, 4> initRect, int classes, float prob) {
     init_kf(initRect);
     m_time_since_update = 0;
     m_hits = 0;
@@ -44,18 +43,18 @@ class KalmanTracker {
   ~KalmanTracker() { m_history.clear(); }
 
   /// \brief predict the estimated bounding box
-  StateType Predict();
+  std::array<float, 4> Predict();
 
   /// \brief update the state vector with observed bounding box
-  void Update(StateType stateMat, int classes, float prob,
+  void Update(std::array<float, 4> stateMat, int classes, float prob,
               const cv::Mat& feature);
 
  public:
   /// \brief get the current state vector
-  StateType GetState();
+  std::array<float, 4> GetState();
 
   /// \brief convert bounding box from [cx,cy,s,r] to [x,y,w,h] style
-  StateType GetBoxFromXYSR(float cx, float cy, float s, float r);
+  std::array<float, 4> GetBoxFromXYSR(float cx, float cy, float s, float r);
 
  public:
   static int kf_count;
@@ -70,14 +69,15 @@ class KalmanTracker {
   cv::Mat m_feature;
 
  private:
-  void init_kf(StateType stateMat);
+  void init_kf(std::array<float, 4> stateMat);
 
   cv::KalmanFilter kf;
   cv::Mat measurement;
 
-  std::vector<StateType> m_history;
+  std::vector<std::array<float, 4>> m_history;
 };
 
+}  // namespace deepsort
 }  // namespace vision
 }  // namespace inference
 }  // namespace zetton

@@ -59,7 +59,7 @@ ReIDResult::ReIDResult(const ReIDResult& res) : BaseResult(res) {
   features.assign(res.features.begin(), res.features.end());
 }
 
-void ReIDResult::Clear() { std::vector<std::vector<float>>().swap(features); }
+void ReIDResult::Clear() { std::vector<cv::Mat>().swap(features); }
 
 void ReIDResult::Reserve(int size) { features.reserve(size); }
 
@@ -72,28 +72,32 @@ TrackingResult::TrackingResult() : DetectionResult() {
 TrackingResult::TrackingResult(const TrackingResult& res)
     : DetectionResult(res) {
   features.assign(res.features.begin(), res.features.end());
+  tracking_ids.assign(res.tracking_ids.begin(), res.tracking_ids.end());
 }
 
 void TrackingResult::Clear() {
   DetectionResult::Clear();
-  std::vector<std::vector<float>>().swap(features);
+  std::vector<cv::Mat>().swap(features);
+  std::vector<int32_t>().swap(tracking_ids);
 }
 
 void TrackingResult::Reserve(int size) {
   DetectionResult::Reserve(size);
   features.reserve(size);
+  tracking_ids.reserve(size);
 }
 
 void TrackingResult::Resize(int size) {
   DetectionResult::Resize(size);
   features.resize(size);
+  tracking_ids.resize(size);
 }
 
 std::string TrackingResult::ToString() {
   std::string out =
       "Tracking: [tracking_id, xmin, ymin, xmax, ymax, score, label_id]\n";
   for (size_t i = 0; i < boxes.size(); ++i) {
-    out += fmt::format("-> [{}, {}, {}, {}, {}, {}, {}]\n", tracking_id,
+    out += fmt::format("-> [{}, {}, {}, {}, {}, {}, {}]\n", tracking_ids[i],
                        boxes[i][0], boxes[i][1], boxes[i][2], boxes[i][3],
                        scores[i], label_ids[i]);
   }

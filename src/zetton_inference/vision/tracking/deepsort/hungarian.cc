@@ -1,4 +1,4 @@
-#include "zetton_inference/vision/util/hungarian.h"
+#include "zetton_inference/vision/tracking/deepsort/hungarian.h"
 
 #include <cfloat>
 #include <cmath>
@@ -7,6 +7,7 @@
 namespace zetton {
 namespace inference {
 namespace vision {
+namespace deepsort {
 
 HungarianAlgorithm::HungarianAlgorithm() = default;
 
@@ -368,6 +369,7 @@ void HungarianAlgorithm::step5(int *assignment, double *distMatrix,
         coveredColumns, coveredRows, nOfRows, nOfColumns, minDim);
 }
 
+}  // namespace deepsort
 }  // namespace vision
 }  // namespace inference
 }  // namespace zetton

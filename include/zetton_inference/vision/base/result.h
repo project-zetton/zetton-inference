@@ -2,6 +2,7 @@
 
 #include <array>
 #include <cstdint>
+#include <opencv2/core/mat.hpp>
 #include <string>
 #include <vector>
 
@@ -75,7 +76,7 @@ struct DetectionResult : public BaseResult {
 struct ReIDResult : public BaseResult {
  public:
   /// \brief extracted features from ReID model
-  std::vector<std::vector<float>> features;
+  std::vector<cv::Mat> features;
   /// \brief result type
   ResultType type = ResultType::kReID;
 
@@ -100,9 +101,9 @@ struct ReIDResult : public BaseResult {
 struct TrackingResult : public DetectionResult {
  public:
   /// \brief extracted features from ReID model
-  std::vector<std::vector<float>> features;
+  std::vector<cv::Mat> features;
   /// \brief tracking id
-  int32_t tracking_id = -1;
+  std::vector<int32_t> tracking_ids;
 
  public:
   /// \brief default constructor

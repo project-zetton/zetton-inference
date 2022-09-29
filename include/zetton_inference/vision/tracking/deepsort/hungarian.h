@@ -6,6 +6,7 @@
 namespace zetton {
 namespace inference {
 namespace vision {
+namespace deepsort {
 
 /// \brief a single function wrapper for solving assignment problem.
 class HungarianAlgorithm {
@@ -40,6 +41,7 @@ class HungarianAlgorithm {
              bool *coveredRows, int nOfRows, int nOfColumns, int minDim);
 };
 
+}  // namespace deepsort
 }  // namespace vision
 }  // namespace inference
 }  // namespace zetton

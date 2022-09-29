@@ -1,14 +1,15 @@
-#include "zetton_inference/vision/util/kalman_filter.h"
+#include "zetton_inference/vision/tracking/deepsort/kalman_filter.h"
 
 #include <cmath>
 
 namespace zetton {
 namespace inference {
 namespace vision {
+namespace deepsort {
 
 int KalmanTracker::kf_count = 0;
 
-void KalmanTracker::init_kf(StateType stateMat) {
+void KalmanTracker::init_kf(std::array<float, 4> stateMat) {
   int stateNum = 7;
   int measureNum = 4;
   kf = cv::KalmanFilter(stateNum, measureNum, 0);
@@ -35,7 +36,7 @@ void KalmanTracker::init_kf(StateType stateMat) {
       (stateMat[2] - stateMat[0]) / (stateMat[3] - stateMat[1]);
 }
 
-StateType KalmanTracker::Predict() {
+std::array<float, 4> KalmanTracker::Predict() {
   // predict
   cv::Mat p = kf.predict();
   m_age += 1;
@@ -43,15 +44,16 @@ StateType KalmanTracker::Predict() {
   if (m_time_since_update > 0) m_hit_streak = 0;
   m_time_since_update += 1;
 
-  StateType predictBox = GetBoxFromXYSR(p.at<float>(0, 0), p.at<float>(1, 0),
-                                        p.at<float>(2, 0), p.at<float>(3, 0));
+  std::array<float, 4> predictBox =
+      GetBoxFromXYSR(p.at<float>(0, 0), p.at<float>(1, 0), p.at<float>(2, 0),
+                     p.at<float>(3, 0));
 
   m_history.push_back(predictBox);
   return m_history.back();
 }
 
-void KalmanTracker::Update(StateType stateMat, int classes, float prob,
-                           const cv::Mat& feature) {
+void KalmanTracker::Update(std::array<float, 4> stateMat, int classes,
+                           float prob, const cv::Mat& feature) {
   m_time_since_update = 0;
   m_history.clear();
   m_hits += 1;
@@ -72,13 +74,14 @@ void KalmanTracker::Update(StateType stateMat, int classes, float prob,
   kf.correct(measurement);
 }
 
-StateType KalmanTracker::GetState() {
+std::array<float, 4> KalmanTracker::GetState() {
   cv::Mat s = kf.statePost;
   return GetBoxFromXYSR(s.at<float>(0, 0), s.at<float>(1, 0), s.at<float>(2, 0),
                         s.at<float>(3, 0));
 }
 
-StateType KalmanTracker::GetBoxFromXYSR(float cx, float cy, float s, float r) {
+std::array<float, 4> KalmanTracker::GetBoxFromXYSR(float cx, float cy, float s,
+                                                   float r) {
   float w = std::sqrt(s * r);
   float h = s / w;
   float x = (cx - w / 2);
@@ -94,6 +97,7 @@ StateType KalmanTracker::GetBoxFromXYSR(float cx, float cy, float s, float r) {
   return {x, y, x + w, y + h};
 }
 
+}  // namespace deepsort
 }  // namespace vision
 }  // namespace inference
 }  // namespace zetton

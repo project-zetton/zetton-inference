@@ -14,7 +14,7 @@ void DeepSORTTracker::Update(const DetectionResult &detections,
                              const ReIDResult &features) {
   // construct tracking results by detection results
   tracking_results.Clear();
-  tracking_results.Reserve(detections.boxes.size());
+  tracking_results.Reserve(static_cast<int>(detections.boxes.size()));
   int index = 0;
   for (std::size_t i = 0; i < detections.boxes.size(); ++i) {
     tracking_results.boxes[i] = detections.boxes[i];
@@ -29,8 +29,8 @@ void DeepSORTTracker::Update(const DetectionResult &detections,
       auto tracker = deepsort::KalmanTracker(tracking_results.boxes[i],
                                              tracking_results.label_ids[i],
                                              tracking_results.scores[i]);
-      tracker.feature = tracking_results.features[i].clone();
-      tracking_results.tracking_ids[i] = tracker.id;
+      tracker.data.feature = tracking_results.features[i].clone();
+      tracking_results.tracking_ids[i] = tracker.data.id;
       kalman_boxes_.push_back(tracker);
     }
     return;
@@ -45,20 +45,21 @@ void DeepSORTTracker::Update(const DetectionResult &detections,
     bool is_nan = (std::isnan(pBox[0])) || (std::isnan(pBox[1])) ||
                   (std::isnan(pBox[2])) || (std::isnan(pBox[3]));
     // check if the predicted track is out of image
-    bool is_bound = (pBox[0] > params.size[0]) || (pBox[1] > params.size[1]) ||
+    bool is_bound = (pBox[0] > static_cast<float>(params.size[0])) ||
+                    (pBox[1] > static_cast<float>(params.size[1])) ||
                     (pBox[2] < 0) || (pBox[3] < 0);
     // check if the width or height of predicted track is invalid
     bool is_illegal = (pBox[2] < pBox[0]) || (pBox[3] < pBox[1]);
     // check if the predicted track is too oldjlk;w
-    bool time_since_update = it->time_since_update > params.max_age;
+    bool time_since_update = it->data.time_since_update > params.max_age;
 
     if (!(time_since_update || is_nan || is_bound || is_illegal)) {
       // accept the predicted track if it is valid
       predict_boxes.boxes.push_back(pBox);
-      predict_boxes.label_ids.push_back(it->classes);
-      predict_boxes.scores.push_back(it->prob);
-      predict_boxes.tracking_ids.push_back(it->id);
-      predict_boxes.features.push_back(it->feature);
+      predict_boxes.label_ids.push_back(it->data.label_id);
+      predict_boxes.scores.push_back(it->data.score);
+      predict_boxes.tracking_ids.push_back(it->data.id);
+      predict_boxes.features.push_back(it->data.feature);
       it++;
     } else {
       // remove the predicted track if it is invalid
@@ -82,16 +83,16 @@ void DeepSORTTracker::Update(const DetectionResult &detections,
     kalman_boxes_[trk_id].Update(
         tracking_results.boxes[det_id], tracking_results.label_ids[det_id],
         tracking_results.scores[det_id], tracking_results.features[det_id]);
-    tracking_results.tracking_ids[det_id] = kalman_boxes_[trk_id].id;
+    tracking_results.tracking_ids[det_id] = kalman_boxes_[trk_id].data.id;
   }
 
   // create new tracks for unassigned detection results
-  for (auto umd : unassigned_detections) {
+  for (const auto &umd : unassigned_detections) {
     auto tracker = deepsort::KalmanTracker(tracking_results.boxes[umd],
                                            tracking_results.label_ids[umd],
                                            tracking_results.scores[umd]);
-    tracking_results.tracking_ids[umd] = tracker.id;
-    tracker.feature = tracking_results.features[umd].clone();
+    tracking_results.tracking_ids[umd] = tracker.data.id;
+    tracker.data.feature = tracking_results.features[umd].clone();
     kalman_boxes_.push_back(tracker);
   }
 }

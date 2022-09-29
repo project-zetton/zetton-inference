@@ -9,6 +9,17 @@ namespace inference {
 namespace vision {
 namespace deepsort {
 
+struct KalmanTrackerData {
+  int time_since_update;
+  int hits;
+  int hit_streak;
+  int age;
+  int id;
+  int label_id;
+  float score;
+  cv::Mat feature;
+};
+
 /// \brief This class represents the internel state of individual tracked
 /// objects observed as bounding box.
 class KalmanTracker {
@@ -19,9 +30,10 @@ class KalmanTracker {
   KalmanTracker();
 
   /// \brief constructor with bounding box
-  /// \param initRect bounding box in TLBR format
-  /// \param classes label id
-  KalmanTracker(StateType initRect, int classes, float prob);
+  /// \param box bounding box in TLBR format
+  /// \param label_id label id
+  /// \param prob detection probability
+  KalmanTracker(const StateType& box, int label_id, float score);
 
   /// \brief destructor
   ~KalmanTracker() { history_.clear(); }
@@ -31,7 +43,11 @@ class KalmanTracker {
   StateType Predict();
 
   /// \brief update the state vector with observed bounding box
-  void Update(StateType stateMat, int classes, float prob,
+  /// \param box bounding box in TLBR format
+  /// \param label_id label id
+  /// \param prob detection probability
+  /// \param feature feature vector
+  void Update(const StateType& box, int label_id, float score,
               const cv::Mat& feature);
 
  public:
@@ -39,23 +55,21 @@ class KalmanTracker {
   StateType GetState();
 
  public:
+  /// \brief total number of instances, used for tracking id
   static int kf_count;
-
-  int time_since_update;
-  int hits;
-  int hit_streak;
-  int age;
-  int id;
-  int classes;
-  float prob;
-  cv::Mat feature;
+  /// \brief Stored data for tracker
+  KalmanTrackerData data;
 
  private:
-  void Init(StateType stateMat);
+  /// \brief initialize Kalman filter
+  void Init(StateType box);
 
  private:
+  /// \brief Kalman filter from OpenCV
   cv::KalmanFilter kf_;
+  /// \brief measurement matrix
   cv::Mat measurement_;
+  /// \brief history of tracked bounding box
   std::vector<StateType> history_;
 };
 

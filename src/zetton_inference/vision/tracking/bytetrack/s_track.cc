@@ -5,13 +5,15 @@ namespace inference {
 namespace vision {
 namespace bytetrack {
 
-STrack::STrack(const KalmanFilter::DetectBox& rect, const float& score)
+STrack::STrack(const KalmanFilter::DetectBox& rect, const int32_t label_id,
+               const float& score)
     : kalman_filter_(),
       mean_(),
       covariance_(),
       rect_(rect),
       state_(STrackState::New),
       is_activated_(false),
+      label_id_(label_id),
       score_(score),
       track_id_(0),
       frame_id_(0),
@@ -23,6 +25,9 @@ const KalmanFilter::DetectBox& STrack::GetRect() const { return rect_; }
 const STrackState& STrack::GetSTrackState() const { return state_; }
 
 const bool& STrack::IsActivated() const { return is_activated_; }
+
+const int32_t& STrack::GetLabelId() const { return label_id_; }
+
 const float& STrack::GetScore() const { return score_; }
 
 const size_t& STrack::GetTrackId() const { return track_id_; }

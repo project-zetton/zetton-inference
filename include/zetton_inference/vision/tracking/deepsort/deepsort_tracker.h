@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "zetton_inference/vision/base/result.h"
+#include "zetton_inference/vision/interface/base_tracker.h"
 #include "zetton_inference/vision/tracking/deepsort/kalman_filter.h"
 
 namespace zetton {
@@ -13,7 +14,7 @@ namespace inference {
 namespace vision {
 
 /// \brief parameters for deepsort tracker
-struct DeepSORTTrackerParams {
+struct DeepSORTTrackerParams : BaseVisionTrackerParams {
   /// \brief input image size
   /// \note the input image will be resized to this size
   /// \details tuple of (width, height)
@@ -32,16 +33,27 @@ struct DeepSORTTrackerParams {
 
 /// \brief an object tracking algorithm based on deep appearance features and
 /// Kalman filtering
-class DeepSORTTracker {
+class DeepSORTTracker : public BaseVisionTracker {
  public:
-  /// \brief update the tracker with detection and reid results
-  void Update(const DetectionResult &detections, const ReIDResult &features);
+  /// \brief update tracks wiht the given detection results
+  /// \param detections detection results
+  /// \param tracks output tracking results
+  bool Update(const DetectionResult &detections,
+              TrackingResult &tracks) override;
+
+  /// \brief update tracks wiht the given detection and ReID results
+  /// \param detections detection results
+  /// \param features ReID results
+  /// \param tracks output tracking results
+  bool Update(const DetectionResult &detections, const ReIDResult &features,
+              TrackingResult &tracks) override;
+
+  /// \brief get model name
+  std::string Name() override;
 
  public:
-  /// \brief current tracking results
-  TrackingResult tracking_results;
-  /// \brief parameters for deepsort tracker
-  DeepSORTTrackerParams params;
+  /// \brief get params
+  DeepSORTTrackerParams *GetParams() override;
 
  private:
   /// \brief calculate the IoU value between two bounding boxes
@@ -63,25 +75,32 @@ class DeepSORTTracker {
                  std::vector<cv::Point> &assigned_pairs, int det_num,
                  int trk_num, bool b_iou);
   /// \brief match detections and trackers by IoU
+  /// \param detected_boxes bounding boxes from detection result
   /// \param predict_boxes predicted bounding boxes from Kalman tracker
   /// \param unassigned_detections unassigned detections
   /// \param unassigned_trackers unassigned trackers
   /// \param assigned_pairs assigned detection-tracker pairs
-  void IOUMatching(const TrackingResult &predict_boxes,
+  void IOUMatching(const TrackingResult &detected_boxes,
+                   const TrackingResult &predict_boxes,
                    std::set<int> &unassigned_detections,
                    std::set<int> &unassigned_tracks,
                    std::vector<cv::Point> &assigned_pairs);
   /// \brief match detections and trackers by extracted features
+  /// \param detected_boxes bounding boxes from detection result
   /// \param predict_boxes predicted bounding boxes from Kalman tracker
   /// \param unassigned_detections unassigned detections
   /// \param unassigned_trackers unassigned trackers
   /// \param assigned_pairs assigned detection-tracker pairs
-  void FeatureMatching(const TrackingResult &predict_boxes,
+  void FeatureMatching(const TrackingResult &detected_boxes,
+                       const TrackingResult &predict_boxes,
                        std::set<int> &unassigned_detections,
                        std::set<int> &unassigned_tracks,
                        std::vector<cv::Point> &assigned_pairs);
 
  private:
+  /// \brief parameters for deepsort tracker
+  DeepSORTTrackerParams params_;
+
   /// \brief current trackers
   std::vector<deepsort::KalmanTracker> kalman_boxes_;
 };

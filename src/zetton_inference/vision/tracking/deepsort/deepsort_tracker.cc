@@ -10,8 +10,15 @@ namespace zetton {
 namespace inference {
 namespace vision {
 
-void DeepSORTTracker::Update(const DetectionResult &detections,
-                             const ReIDResult &features) {
+bool DeepSORTTracker::Update(const DetectionResult &detections,
+                             TrackingResult &tracks) {
+  AERROR_F("{} needs ReID result as input", Name());
+  return false;
+}
+
+bool DeepSORTTracker::Update(const DetectionResult &detections,
+                             const ReIDResult &features,
+                             TrackingResult &tracking_results) {
   // construct tracking results by detection results
   tracking_results.Clear();
   tracking_results.Reserve(static_cast<int>(detections.boxes.size()));
@@ -33,7 +40,7 @@ void DeepSORTTracker::Update(const DetectionResult &detections,
       tracking_results.tracking_ids[i] = tracker.data.id;
       kalman_boxes_.push_back(tracker);
     }
-    return;
+    return false;
   }
 
   // check predicted tracks from kalman filter
@@ -45,13 +52,13 @@ void DeepSORTTracker::Update(const DetectionResult &detections,
     bool is_nan = (std::isnan(pBox[0])) || (std::isnan(pBox[1])) ||
                   (std::isnan(pBox[2])) || (std::isnan(pBox[3]));
     // check if the predicted track is out of image
-    bool is_bound = (pBox[0] > static_cast<float>(params.size[0])) ||
-                    (pBox[1] > static_cast<float>(params.size[1])) ||
+    bool is_bound = (pBox[0] > static_cast<float>(params_.size[0])) ||
+                    (pBox[1] > static_cast<float>(params_.size[1])) ||
                     (pBox[2] < 0) || (pBox[3] < 0);
     // check if the width or height of predicted track is invalid
     bool is_illegal = (pBox[2] < pBox[0]) || (pBox[3] < pBox[1]);
     // check if the predicted track is too oldjlk;w
-    bool time_since_update = it->data.time_since_update > params.max_age;
+    bool time_since_update = it->data.time_since_update > params_.max_age;
 
     if (!(time_since_update || is_nan || is_bound || is_illegal)) {
       // accept the predicted track if it is valid
@@ -71,10 +78,10 @@ void DeepSORTTracker::Update(const DetectionResult &detections,
   std::set<int> unassigned_detections;
   std::set<int> unassigned_tracks;
   std::vector<cv::Point> assigned_pairs;
-  FeatureMatching(predict_boxes, unassigned_detections, unassigned_tracks,
-                  assigned_pairs);
-  IOUMatching(predict_boxes, unassigned_detections, unassigned_tracks,
-              assigned_pairs);
+  FeatureMatching(tracking_results, predict_boxes, unassigned_detections,
+                  unassigned_tracks, assigned_pairs);
+  IOUMatching(tracking_results, predict_boxes, unassigned_detections,
+              unassigned_tracks, assigned_pairs);
 
   // update tracks with assigned detection results
   for (auto &assigned_pair : assigned_pairs) {
@@ -95,7 +102,13 @@ void DeepSORTTracker::Update(const DetectionResult &detections,
     tracker.data.feature = tracking_results.features[umd].clone();
     kalman_boxes_.push_back(tracker);
   }
+
+  return true;
 }
+
+std::string DeepSORTTracker::Name() { return "DeepSORTTracker"; }
+
+DeepSORTTrackerParams *DeepSORTTracker::GetParams() { return &params_; }
 
 float DeepSORTTracker::IOUCalculate(
     const deepsort::KalmanTracker::StateType &det_a,
@@ -171,7 +184,7 @@ void DeepSORTTracker::Alignment(std::vector<std::vector<double>> cost_matrix,
     for (int i = 0; i < trk_num; ++i) {
       if (assignment[i] == -1)  // pass over invalid values
         continue;
-      if (1 - cost_matrix[i][assignment[i]] < params.iou_threshold) {
+      if (1 - cost_matrix[i][assignment[i]] < params_.iou_threshold) {
         unassigned_tracks.insert(tracker_index[i]);
         unassigned_detections.insert(detection_index[assignment[i]]);
       } else
@@ -198,7 +211,7 @@ void DeepSORTTracker::Alignment(std::vector<std::vector<double>> cost_matrix,
     for (int i = 0; i < trk_num; ++i) {
       if (assignment[i] == -1)  // pass over invalid values
         continue;
-      if (1 - cost_matrix[i][assignment[i]] < params.sim_threshold) {
+      if (1 - cost_matrix[i][assignment[i]] < params_.sim_threshold) {
         unassigned_tracks.insert(i);
         unassigned_detections.insert(assignment[i]);
       } else
@@ -207,7 +220,8 @@ void DeepSORTTracker::Alignment(std::vector<std::vector<double>> cost_matrix,
   }
 }
 
-void DeepSORTTracker::IOUMatching(const TrackingResult &predict_boxes,
+void DeepSORTTracker::IOUMatching(const TrackingResult &detected_boxes,
+                                  const TrackingResult &predict_boxes,
                                   std::set<int> &unassigned_detections,
                                   std::set<int> &unassigned_tracks,
                                   std::vector<cv::Point> &assigned_pairs) {
@@ -223,10 +237,10 @@ void DeepSORTTracker::IOUMatching(const TrackingResult &predict_boxes,
   for (const int &umt : unassigned_tracks) {
     int j = 0;
     for (const int &umd : unassigned_detections) {
-      if (predict_boxes.label_ids[umt] == tracking_results.label_ids[umd] ||
-          params.agnostic) {
+      if (predict_boxes.label_ids[umt] == detected_boxes.label_ids[umd] ||
+          params_.agnostic) {
         iou_mat[i][j] = 1 - IOUCalculate(predict_boxes.boxes[umt],
-                                         tracking_results.boxes[umd]);
+                                         detected_boxes.boxes[umd]);
       } else
         iou_mat[i][j] = 1;
       j++;
@@ -237,11 +251,12 @@ void DeepSORTTracker::IOUMatching(const TrackingResult &predict_boxes,
             det_num, trk_num, true);
 }
 
-void DeepSORTTracker::FeatureMatching(const TrackingResult &predict_boxes,
+void DeepSORTTracker::FeatureMatching(const TrackingResult &detected_boxes,
+                                      const TrackingResult &predict_boxes,
                                       std::set<int> &unassigned_detections,
                                       std::set<int> &unassigned_tracks,
                                       std::vector<cv::Point> &assigned_pairs) {
-  int det_num = static_cast<int>(tracking_results.boxes.size());
+  int det_num = static_cast<int>(detected_boxes.boxes.size());
   int trk_num = static_cast<int>(predict_boxes.boxes.size());
   std::vector<std::vector<double>> similar_mat(trk_num,
                                                std::vector<double>(det_num, 0));
@@ -250,10 +265,10 @@ void DeepSORTTracker::FeatureMatching(const TrackingResult &predict_boxes,
     for (int j = 0; j < det_num; j++) {
       // use 1-iou because the hungarian algorithm computes a minimum-cost
       // assignment.
-      if (predict_boxes.label_ids[i] == tracking_results.label_ids[j] ||
-          params.agnostic) {
+      if (predict_boxes.label_ids[i] == detected_boxes.label_ids[j] ||
+          params_.agnostic) {
         similar_mat[i][j] =
-            1 - predict_boxes.features[i].dot(tracking_results.features[j]);
+            1 - predict_boxes.features[i].dot(detected_boxes.features[j]);
       } else {
         similar_mat[i][j] = 1;
       }

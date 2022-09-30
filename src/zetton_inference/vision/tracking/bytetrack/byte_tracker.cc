@@ -1,5 +1,7 @@
 #include "zetton_inference/vision/tracking/bytetrack/byte_tracker.h"
 
+#include <zetton_common/log/log.h>
+
 #include <map>
 
 #include "zetton_inference/vision/tracking/bytetrack/kalman_filter.h"
@@ -12,17 +14,46 @@ namespace vision {
 ByteTracker::ByteTracker(const int &frame_rate, const int &track_buffer,
                          const float &track_thresh, const float &high_thresh,
                          const float &match_thresh)
-    : track_thresh_(track_thresh),
-      high_thresh_(high_thresh),
-      match_thresh_(match_thresh),
-      max_time_lost_(static_cast<size_t>(frame_rate / 30.0 * track_buffer)),
-      frame_id_(0),
-      track_id_count_(0) {}
+    : frame_id_(0), track_id_count_(0) {
+  params_.track_thresh = track_thresh;
+  params_.high_thresh = high_thresh;
+  params_.match_thresh = match_thresh;
+  params_.max_time_lost = static_cast<size_t>(frame_rate / 30.0 * track_buffer);
+}
 
-ByteTracker::~ByteTracker() {}
+bool ByteTracker::Init(const ByteTrackerParams &params) {
+  params_ = params;
+  return true;
+}
+
+bool ByteTracker::Update(const DetectionResult &detections,
+                         TrackingResult &tracks) {
+  // do inner update
+  auto ret = InnerUpdate(detections);
+
+  // get stracks from inner trackers
+  auto stracks = GetSTracks();
+
+  // assign stracks to tracking results
+  tracks.Clear();
+  tracks.Reserve(static_cast<int>(stracks.size()));
+  for (std::size_t i = 0; i < stracks.size(); ++i) {
+    tracks.tracking_ids[i] = stracks[i]->GetTrackId();
+    tracks.boxes[i] = GetTLBRFromTLWH(stracks[i]->GetRect());
+    tracks.label_ids[i] = stracks[i]->GetLabelId();
+    tracks.scores[i] = stracks[i]->GetScore();
+  }
+
+  return ret;
+}
 
 std::vector<ByteTracker::STrackPtr> ByteTracker::Update(
     const DetectionResult &objects) {
+  InnerUpdate(objects);
+  return GetSTracks();
+}
+
+bool ByteTracker::InnerUpdate(const DetectionResult &objects) {
   // Step 1: Get detections
   frame_id_++;
 
@@ -32,8 +63,9 @@ std::vector<ByteTracker::STrackPtr> ByteTracker::Update(
 
   for (std::size_t i = 0; i < objects.boxes.size(); ++i) {
     const auto strack = std::make_shared<bytetrack::STrack>(
-        GetTLWHFromTLBR(objects.boxes[i]), objects.scores[i]);
-    if (objects.scores[i] >= track_thresh_) {
+        GetTLWHFromTLBR(objects.boxes[i]), objects.label_ids[i],
+        objects.scores[i]);
+    if (objects.scores[i] >= params_.track_thresh) {
       det_stracks.push_back(strack);
     } else {
       det_low_stracks.push_back(strack);
@@ -72,7 +104,7 @@ std::vector<ByteTracker::STrackPtr> ByteTracker::Update(
 
     const auto dists = CalcIoUDistance(strack_pool, det_stracks);
     LinearAssignment(dists, strack_pool.size(), det_stracks.size(),
-                     match_thresh_, matches_idx, unmatch_track_idx,
+                     params_.match_thresh, matches_idx, unmatch_track_idx,
                      unmatch_detection_idx);
 
     for (const auto &match_idx : matches_idx) {
@@ -162,7 +194,7 @@ std::vector<ByteTracker::STrackPtr> ByteTracker::Update(
     // Add new stracks
     for (const auto &unmatch_idx : unmatch_detection_idx) {
       const auto track = remain_det_stracks[unmatch_idx];
-      if (track->GetScore() < high_thresh_) {
+      if (track->GetScore() < params_.high_thresh) {
         continue;
       }
       track_id_count_++;
@@ -173,7 +205,7 @@ std::vector<ByteTracker::STrackPtr> ByteTracker::Update(
 
   // Step 5: Update state
   for (const auto &lost_strack : lost_stracks_) {
-    if (frame_id_ - lost_strack->GetFrameId() > max_time_lost_) {
+    if (frame_id_ - lost_strack->GetFrameId() > params_.max_time_lost) {
       lost_strack->MarkAsRemoved();
       current_removed_stracks.push_back(lost_strack);
     }
@@ -192,6 +224,18 @@ std::vector<ByteTracker::STrackPtr> ByteTracker::Update(
   tracked_stracks_ = tracked_stracks_out;
   lost_stracks_ = lost_stracks_out;
 
+  return true;
+}
+
+bool ByteTracker::Update(const DetectionResult &detections,
+                         const ReIDResult &features, TrackingResult &tracks) {
+  AWARN_F("{} doesn't use ReID result.", Name());
+  return Update(detections, tracks);
+}
+
+std::string ByteTracker::Name() { return "ByteTracker"; }
+
+std::vector<ByteTracker::STrackPtr> ByteTracker::GetSTracks() {
   std::vector<STrackPtr> output_stracks;
   for (const auto &track : tracked_stracks_) {
     if (track->IsActivated()) {
@@ -201,6 +245,8 @@ std::vector<ByteTracker::STrackPtr> ByteTracker::Update(
 
   return output_stracks;
 }
+
+ByteTrackerParams *ByteTracker::GetParams() { return &params_; }
 
 std::vector<ByteTracker::STrackPtr> ByteTracker::JoinSTracks(
     const std::vector<STrackPtr> &a_tlist,

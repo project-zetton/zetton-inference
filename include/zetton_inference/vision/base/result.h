@@ -44,7 +44,7 @@ struct ClassificationResult : public BaseResult {
 /// \brief Detection result from vision model
 struct DetectionResult : public BaseResult {
  public:
-  /// \brief bounding boxes (xmin, ymin, xmax, ymax)
+  /// \brief bounding boxes in TLBR format (xmin, ymin, xmax, ymax)
   std::vector<std::array<float, 4>> boxes;
   /// \brief labels of detection result
   std::vector<int32_t> label_ids;

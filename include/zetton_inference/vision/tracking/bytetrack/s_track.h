@@ -21,7 +21,8 @@ class STrack {
   /// \brief constructor
   /// \param rect bounding box of the object in [x,y,w,h] style
   /// \param score detection score
-  STrack(const KalmanFilter::DetectBox& rect, const float& score);
+  STrack(const KalmanFilter::DetectBox& rect, const int32_t label_id,
+         const float& score);
 
   /// \brief destructor
   ~STrack() = default;
@@ -34,6 +35,8 @@ class STrack {
 
   /// \brief whether the track has been activated
   const bool& IsActivated() const;
+  /// \brief get the detection label id of the track
+  const int32_t& GetLabelId() const;
   /// \brief get the detection score of the track
   const float& GetScore() const;
   /// \brief get the track id
@@ -84,6 +87,8 @@ class STrack {
 
   /// \brief whether the track has been activated
   bool is_activated_;
+  /// \brief detection label id of the track
+  int32_t label_id_;
   /// \brief detection score of the track
   float score_;
   /// \brief track id of the track

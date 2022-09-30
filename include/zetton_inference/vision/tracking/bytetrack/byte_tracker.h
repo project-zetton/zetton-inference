@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "zetton_inference/vision/base/result.h"
+#include "zetton_inference/vision/interface/base_tracker.h"
 #include "zetton_inference/vision/tracking/bytetrack/kalman_filter.h"
 #include "zetton_inference/vision/tracking/bytetrack/lapjv.h"
 #include "zetton_inference/vision/tracking/bytetrack/s_track.h"
@@ -11,8 +12,19 @@ namespace zetton {
 namespace inference {
 namespace vision {
 
+struct ByteTrackerParams : BaseVisionTrackerParams {
+  /// \brief threshold allowed for tracking
+  float track_thresh;
+  /// \brief threshold for high-confidence measurements
+  float high_thresh;
+  /// \brief threhosld for detection-to-track matching
+  float match_thresh;
+  /// \brief maximum invisible duration for a track to be marked as lost
+  size_t max_time_lost;
+};
+
 /// \brief ByteTrack tracker
-class ByteTracker {
+class ByteTracker : public BaseVisionTracker {
  public:
   using STrackPtr = std::shared_ptr<bytetrack::STrack>;
 
@@ -21,15 +33,46 @@ class ByteTracker {
               const float &track_thresh = 0.5, const float &high_thresh = 0.6,
               const float &match_thresh = 0.8);
   /// \brief destructor
-  ~ByteTracker();
+  ~ByteTracker() = default;
 
-  /// \brief update the tracker with the given detection results and return the
-  /// tracking results
+ public:
+  /// \brief initialize the tracker
+  bool Init(const ByteTrackerParams &params);
+
+  /// \brief update tracks with given detection results
   /// \param objects detection results
   /// \return tracking results with [x,y,w,h] box format
   std::vector<STrackPtr> Update(const DetectionResult &objects);
 
+  /// \brief update tracks wiht the given detection results
+  /// \param detections detection results
+  /// \param tracks output tracking results
+  bool Update(const DetectionResult &detections,
+              TrackingResult &tracks) override;
+
+  /// \brief update tracks wiht the given detection and ReID results
+  /// \param detections detection results
+  /// \param features ReID results
+  /// \param tracks output tracking results
+  bool Update(const DetectionResult &detections, const ReIDResult &features,
+              TrackingResult &tracks) override;
+
+  /// \brief get model name
+  std::string Name() override;
+
+ public:
+  /// \brief get alive tracks
+  std::vector<STrackPtr> GetSTracks();
+
+  /// \brief get params
+  ByteTrackerParams *GetParams() override;
+
  private:
+  /// \brief inner implementation to update the tracker with the given detection
+  /// results
+  /// \param objects detection results
+  bool InnerUpdate(const DetectionResult &objects);
+
   /// \brief merge two vectors of STrackPtr into one (a + b)
   /// \param a_tlist vector a
   /// \param b_tlist vector b
@@ -99,14 +142,7 @@ class ByteTracker {
                    bool return_cost = true) const;
 
  private:
-  /// \brief threshold allowed for tracking
-  const float track_thresh_;
-  /// \brief threshold for high-confidence measurements
-  const float high_thresh_;
-  /// \brief threhosld for detection-to-track matching
-  const float match_thresh_;
-  /// \brief maximum invisible duration for a track to be marked as lost
-  const size_t max_time_lost_;
+  ByteTrackerParams params_;
 
   /// \brief current frame id
   std::size_t frame_id_;

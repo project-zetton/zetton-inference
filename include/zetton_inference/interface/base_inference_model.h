@@ -2,6 +2,7 @@
 
 #include <string>
 
+#include "zetton_common/util/perf.h"
 #include "zetton_inference/base/options.h"
 #include "zetton_inference/base/runtime.h"
 #include "zetton_inference/base/type.h"
@@ -55,8 +56,7 @@ class BaseInferenceModel {
  public:
   /// \brief start to record the inference time for statistics
   virtual void EnableRecordTimeOfRuntime() {
-    time_of_runtime_.clear();
-    std::vector<double>().swap(time_of_runtime_);
+    fps_.Clear();
     enable_record_time_of_runtime_ = true;
   }
 
@@ -95,7 +95,7 @@ class BaseInferenceModel {
   /// \brief whether to record inference time
   bool enable_record_time_of_runtime_ = false;
   /// \brief record inference time for backend
-  std::vector<double> time_of_runtime_;
+  common::FpsCalculator fps_;
 };
 
 }  // namespace inference

@@ -2,7 +2,6 @@
 
 #include <memory>
 
-#include "zetton_common/util/perf.h"
 #include "zetton_inference/base/runtime.h"
 #include "zetton_inference/base/type.h"
 #include "zetton_inference/util/runtime_util.h"
@@ -179,7 +178,7 @@ bool BaseInferenceModel::Infer(std::vector<Tensor>& input_tensors,
   // start recording inference time
   zetton::common::TimeCounter tc;
   if (enable_record_time_of_runtime_) {
-    tc.Start();
+    fps_.Start();
   }
 
   // do inference
@@ -187,54 +186,19 @@ bool BaseInferenceModel::Infer(std::vector<Tensor>& input_tensors,
 
   // end recording infenrence time
   if (enable_record_time_of_runtime_) {
-    tc.End();
-    if (time_of_runtime_.size() > 50000) {
+    fps_.End();
+    if (fps_.GetSize() > 50000) {
       AWARN_F("Already record 50000 inference times, stop recording.");
       enable_record_time_of_runtime_ = false;
     }
-    time_of_runtime_.push_back(tc.Duration());
   }
 
   return ret;
 }
 
 std::map<std::string, double> BaseInferenceModel::PrintStatsInfoOfRuntime() {
-  std::map<std::string, double> stats_info_of_runtime_dict;
-
-  if (time_of_runtime_.size() < 10) {
-    AWARN_F("Too few inference times to print stats info.");
-  }
-  double warmup_time = 0.0;
-  double remain_time = 0.0;
-  std::size_t warmup_iter = time_of_runtime_.size() / 5;
-  for (std::size_t i = 0; i < time_of_runtime_.size(); ++i) {
-    if (i < warmup_iter) {
-      warmup_time += time_of_runtime_[i];
-    } else {
-      remain_time += time_of_runtime_[i];
-    }
-  }
-  double avg_time =
-      remain_time / static_cast<double>(time_of_runtime_.size() - warmup_iter);
-
-  AINFO_F("============= Runtime Stats Info({}) =============", Name());
-  AINFO_F("Total iterations: {}", time_of_runtime_.size());
-  AINFO_F("Total time of runtime: {}s.", warmup_time + remain_time);
-  AINFO_F("Warmup iterations: {}.", warmup_iter);
-  AINFO_F("Total time of runtime in warmup step: {}s.", warmup_time);
-  AINFO_F("Average time of runtime exclude warmup step: {}ms.",
-          avg_time * 1000);
-  AINFO_F("Average FPS exclude warmup step: {}.", 1.0 / avg_time);
-  AINFO_F("============= Runtime Stats Info({}) =============", Name());
-
-  stats_info_of_runtime_dict["total_time"] = warmup_time + remain_time;
-  stats_info_of_runtime_dict["warmup_time"] = warmup_time;
-  stats_info_of_runtime_dict["remain_time"] = remain_time;
-  stats_info_of_runtime_dict["warmup_iter"] = static_cast<double>(warmup_iter);
-  stats_info_of_runtime_dict["avg_time"] = avg_time;
-  stats_info_of_runtime_dict["iterations"] =
-      static_cast<double>(time_of_runtime_.size());
-
+  auto stats_info_of_runtime_dict = fps_.GetStats();
+  fps_.PrintInfo(stats_info_of_runtime_dict, Name());
   return stats_info_of_runtime_dict;
 }
 

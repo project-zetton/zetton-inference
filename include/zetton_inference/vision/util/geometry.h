@@ -67,6 +67,26 @@ inline std::array<float, 4> GetTLWHFromTLBR(const std::array<float, 4>& tlbr) {
   };
 }
 
+/// \brief convert bounding box from [cx,cy,w,h] to [x1,y1,x2,y2] style
+inline std::array<float, 4> GetTLBRFromXYWH(const std::array<float, 4>& xywh) {
+  return {
+      xywh[0] - xywh[2] / 2,
+      xywh[1] - xywh[3] / 2,
+      xywh[0] + xywh[2] / 2,
+      xywh[1] + xywh[3] / 2,
+  };
+}
+
+/// \brief convert bounding box from [x1,y1,x2,y2] to [cx,cy,w,h] style
+inline std::array<float, 4> GetXYWHFromTLBR(const std::array<float, 4>& tlbr) {
+  return {
+      tlbr[0] + (tlbr[2] - tlbr[0]) / 2,
+      tlbr[1] + (tlbr[3] - tlbr[1]) / 2,
+      tlbr[2] - tlbr[0],
+      tlbr[3] - tlbr[1],
+  };
+}
+
 /// \brief convert bounding box from [x1,y1,x2,y2] to [cx,cy,s,r] style
 inline std::array<float, 4> GetXYSRFromTLBR(const std::array<float, 4>& tlbr) {
   return {

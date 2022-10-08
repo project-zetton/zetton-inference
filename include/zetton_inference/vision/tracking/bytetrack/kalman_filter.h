@@ -25,9 +25,11 @@ class KalmanFilter {
 
  public:
   /// \brief initialize the state of kalman filter
-  /// \param mean state mean of the kalman filter
+  /// \param mean state mean of the kalman filter in [x,y,a,h,vx,vy,va,vh]
+  /// format
   /// \param covariance state covariance of the kalman filter
-  /// \param measurement input detection results as measurement
+  /// \param measurement input detection results as measurement in [x,y,a,h]
+  /// format
   void Init(StateMean& mean, StateCov& covariance,
             const DetectBox& measurement);
 
@@ -35,18 +37,22 @@ class KalmanFilter {
   void Predict(StateMean& mean, StateCov& covariance);
 
   /// \brief update the state of kalman filter with the given measurement
-  /// \param mean state mean of the kalman filter
+  /// \param mean state mean of the kalman filter in [x,y,a,h,vx,vy,va,vh]
+  /// format
   /// \param covariance state covariance of the kalman filter
-  /// \param measurement input detection results as measurement
+  /// \param measurement input detection results as measurement in [x,y,a,h]
+  /// format
   void Update(StateMean& mean, StateCov& covariance,
               const DetectBox& measurement);
 
  private:
   /// \brief project the state of kalman filter to the measurement space
-  /// \param projected_mean projected state mean of the kalman filter
+  /// \param projected_mean projected state mean of the kalman filter in
+  /// [x,y,a,h,vx,vy,va,vh] format
   /// \param projected_covariance projected state covariance of the kalman
   /// filter
-  /// \param mean state mean of the kalman filter
+  /// \param mean state mean of the kalman filter in [x,y,a,h,vx,vy,va,vh]
+  /// format
   /// \param covariance state covariance of the kalman filter
   void Project(StateHMean& projected_mean, StateHCov& projected_covariance,
                const StateMean& mean, const StateCov& covariance);
@@ -58,8 +64,10 @@ class KalmanFilter {
   float std_weight_velocity_;
 
   /// \brief state transition matrix of the kalman filter
+  /// \details state variable is in [x,y,a,h,vx,vy,va,vh] format
   Eigen::Matrix<float, 8, 8, Eigen::RowMajor> motion_mat_;
   /// \brief measurement matrix of the kalman filter
+  /// \details measurement variable is in [x,y,a,h] format
   Eigen::Matrix<float, 4, 8, Eigen::RowMajor> update_mat_;
 };
 

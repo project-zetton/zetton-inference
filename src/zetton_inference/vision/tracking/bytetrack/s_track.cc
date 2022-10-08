@@ -1,5 +1,7 @@
 #include "zetton_inference/vision/tracking/bytetrack/s_track.h"
 
+#include "zetton_inference/vision/util/geometry.h"
+
 namespace zetton {
 namespace inference {
 namespace vision {
@@ -39,7 +41,7 @@ const size_t& STrack::GetStartFrameId() const { return start_frame_id_; }
 const size_t& STrack::GetTrackletLength() const { return tracklet_len_; }
 
 void STrack::Activate(const size_t& frame_id, const size_t& track_id) {
-  kalman_filter_.Init(mean_, covariance_, rect_);
+  kalman_filter_.Init(mean_, covariance_, GetXYAHFromTLWH(rect_));
 
   UpdateRect();
 
@@ -55,7 +57,8 @@ void STrack::Activate(const size_t& frame_id, const size_t& track_id) {
 
 void STrack::Reactivate(const STrack& new_track, const size_t& frame_id,
                         const int& new_track_id) {
-  kalman_filter_.Update(mean_, covariance_, new_track.GetRect());
+  kalman_filter_.Update(mean_, covariance_,
+                        GetXYAHFromTLWH(new_track.GetRect()));
 
   UpdateRect();
 
@@ -77,7 +80,8 @@ void STrack::Predict() {
 }
 
 void STrack::Update(const STrack& new_track, const size_t& frame_id) {
-  kalman_filter_.Update(mean_, covariance_, new_track.GetRect());
+  kalman_filter_.Update(mean_, covariance_,
+                        GetXYAHFromTLWH(new_track.GetRect()));
 
   UpdateRect();
 
@@ -93,12 +97,10 @@ void STrack::MarkAsLost() { state_ = STrackState::Lost; }
 void STrack::MarkAsRemoved() { state_ = STrackState::Removed; }
 
 void STrack::UpdateRect() {
-  float width = mean_[2] * mean_[3];
-  float height = mean_[3];
-  rect_[0] = mean_[0] - width / 2;
-  rect_[1] = mean_[1] - height / 2;
-  rect_[2] = mean_[0] + width / 2;
-  rect_[3] = mean_[1] + height / 2;
+  rect_[2] = mean_[2] * mean_[3];
+  rect_[3] = mean_[3];
+  rect_[0] = mean_[0] - rect_[2] / 2;
+  rect_[1] = mean_[1] - rect_[3] / 2;
 }
 
 }  // namespace bytetrack

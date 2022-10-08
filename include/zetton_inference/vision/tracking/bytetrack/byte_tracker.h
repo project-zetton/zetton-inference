@@ -14,11 +14,11 @@ namespace vision {
 
 struct ByteTrackerParams : BaseVisionTrackerParams {
   /// \brief threshold allowed for tracking
-  float track_thresh;
+  float track_thresh = 0.4;
   /// \brief threshold for high-confidence measurements
-  float high_thresh;
+  float high_thresh = 0.6;
   /// \brief threhosld for detection-to-track matching
-  float match_thresh;
+  float match_thresh = 0.8;
   /// \brief maximum invisible duration for a track to be marked as lost
   size_t max_time_lost;
 };
@@ -122,17 +122,17 @@ class ByteTracker : public BaseVisionTracker {
       const std::vector<STrackPtr> &b_tracks) const;
 
   /// \brief calculate the IoU of two bounding boxes
-  /// \param a_rect bounding box a
-  /// \param b_rect bounding box b
-  float CalcIoU(const bytetrack::KalmanFilter::DetectBox &a_rect,
-                const bytetrack::KalmanFilter::DetectBox &b_rect) const;
+  /// \param a_tlwh bounding box a in TLWH style
+  /// \param b_tlwh bounding box b in TLWH style
+  float CalcIoU(const bytetrack::KalmanFilter::DetectBox &a_tlwh,
+                const bytetrack::KalmanFilter::DetectBox &b_tlwh) const;
 
   /// \brief calculate the cost matrix of the association by IoU
-  /// \param a_stracks tracks
-  /// \param b_stracks another tracks
+  /// \param a_stracks tracks with bounding boxes in TLWH style
+  /// \param b_stracks other tracks with bounding boxes in TLWH style
   std::vector<std::vector<float>> CalcIoUs(
-      const std::vector<bytetrack::KalmanFilter::DetectBox> &a_rect,
-      const std::vector<bytetrack::KalmanFilter::DetectBox> &b_rect) const;
+      const std::vector<bytetrack::KalmanFilter::DetectBox> &a_tlwhs,
+      const std::vector<bytetrack::KalmanFilter::DetectBox> &b_tlwhs) const;
 
   /// \brief solve the assignment problem by Hungarian algorithm
   double execLapjv(const std::vector<std::vector<float>> &cost,

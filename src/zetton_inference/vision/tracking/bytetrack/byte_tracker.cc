@@ -37,11 +37,11 @@ bool ByteTracker::Update(const DetectionResult &detections,
   // assign stracks to tracking results
   tracks.Clear();
   tracks.Reserve(static_cast<int>(stracks.size()));
-  for (std::size_t i = 0; i < stracks.size(); ++i) {
-    tracks.tracking_ids[i] = stracks[i]->GetTrackId();
-    tracks.boxes[i] = GetTLBRFromTLWH(stracks[i]->GetRect());
-    tracks.label_ids[i] = stracks[i]->GetLabelId();
-    tracks.scores[i] = stracks[i]->GetScore();
+  for (const auto &strack : stracks) {
+    tracks.tracking_ids.push_back(strack->GetTrackId());
+    tracks.boxes.push_back(GetTLBRFromTLWH(strack->GetRect()));
+    tracks.label_ids.push_back(strack->GetLabelId());
+    tracks.scores.push_back(strack->GetScore());
   }
 
   return ret;
@@ -370,10 +370,10 @@ void ByteTracker::LinearAssignment(
 }
 
 float ByteTracker::CalcIoU(
-    const bytetrack::KalmanFilter::DetectBox &a_rect,
-    const bytetrack::KalmanFilter::DetectBox &b_rect) const {
-  auto a_tlwh = GetTLWHFromTLBR(a_rect);
-  auto b_tlwh = GetTLWHFromTLBR(b_rect);
+    const bytetrack::KalmanFilter::DetectBox &a_tlwh,
+    const bytetrack::KalmanFilter::DetectBox &b_tlwh) const {
+  // auto a_tlwh = GetTLWHFromTLBR(a_rect);
+  // auto b_tlwh = GetTLWHFromTLBR(b_rect);
 
   const float box_area = (b_tlwh[2] + 1) * (b_tlwh[3] + 1);
   const float iw = std::min(a_tlwh[0] + a_tlwh[2], b_tlwh[0] + b_tlwh[2]) -
@@ -393,21 +393,21 @@ float ByteTracker::CalcIoU(
 }
 
 std::vector<std::vector<float>> ByteTracker::CalcIoUs(
-    const std::vector<std::array<float, 4>> &a_rect,
-    const std::vector<std::array<float, 4>> &b_rect) const {
+    const std::vector<std::array<float, 4>> &a_tlwhs,
+    const std::vector<std::array<float, 4>> &b_tlwhs) const {
   std::vector<std::vector<float>> ious;
-  if (a_rect.size() * b_rect.size() == 0) {
+  if (a_tlwhs.size() * b_tlwhs.size() == 0) {
     return ious;
   }
 
-  ious.resize(a_rect.size());
-  for (size_t i = 0; i < ious.size(); i++) {
-    ious[i].resize(b_rect.size());
+  ious.resize(a_tlwhs.size());
+  for (auto &iou : ious) {
+    iou.resize(b_tlwhs.size());
   }
 
-  for (size_t bi = 0; bi < b_rect.size(); bi++) {
-    for (size_t ai = 0; ai < a_rect.size(); ai++) {
-      ious[ai][bi] = CalcIoU(b_rect[bi], a_rect[ai]);
+  for (size_t bi = 0; bi < b_tlwhs.size(); bi++) {
+    for (size_t ai = 0; ai < a_tlwhs.size(); ai++) {
+      ious[ai][bi] = CalcIoU(b_tlwhs[bi], a_tlwhs[ai]);
     }
   }
   return ious;
@@ -417,21 +417,22 @@ std::vector<std::vector<float>> ByteTracker::CalcIoUDistance(
     const std::vector<STrackPtr> &a_tracks,
     const std::vector<STrackPtr> &b_tracks) const {
   std::vector<std::array<float, 4>> a_rects, b_rects;
-  for (size_t i = 0; i < a_tracks.size(); i++) {
-    a_rects.push_back(a_tracks[i]->GetRect());
+  for (const auto &a_track : a_tracks) {
+    a_rects.push_back(a_track->GetRect());
   }
 
-  for (size_t i = 0; i < b_tracks.size(); i++) {
-    b_rects.push_back(b_tracks[i]->GetRect());
+  for (const auto &b_track : b_tracks) {
+    b_rects.push_back(b_track->GetRect());
   }
 
   const auto ious = CalcIoUs(a_rects, b_rects);
 
   std::vector<std::vector<float>> cost_matrix;
-  for (size_t i = 0; i < ious.size(); i++) {
+  for (const auto &i : ious) {
     std::vector<float> iou;
-    for (size_t j = 0; j < ious[i].size(); j++) {
-      iou.push_back(1 - ious[i][j]);
+    iou.reserve(i.size());
+    for (float j : i) {
+      iou.push_back(1 - j);
     }
     cost_matrix.push_back(iou);
   }

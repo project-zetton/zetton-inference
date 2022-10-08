@@ -1,4 +1,0 @@
-[submodule "external/yolo-tensorrt"]
-	path = external/yolo-tensorrt
-	url = https://github.com/project-zetton/yolo-tensorrt.git
-	branch = zetton

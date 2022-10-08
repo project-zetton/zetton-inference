@@ -1,0 +1,19 @@
+# - Config file for the zetton_inference package
+# It defines the following variable
+# zetton_inference_LIBRARIES - libraries to link against
+
+include(CMakeFindDependencyMacro)
+
+# Find dependencies
+find_dependency(Threads REQUIRED)
+find_dependency(Eigen3 REQUIRED)
+find_dependency(OpenCV 4 REQUIRED)
+find_dependency(CUDA REQUIRED)
+find_dependency(CUDAToolkit REQUIRED)
+find_dependency(zetton_common REQUIRED)
+
+# Our library dependencies (contains definitions for IMPORTED targets)
+include("${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@Targets.cmake")
+
+# These are IMPORTED targets created by @PROJECT_NAME@Targets.cmake
+set(zetton_inference_LIBRARIES @PROJECT_NAME@::@PROJECT_NAME@)

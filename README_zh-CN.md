@@ -68,7 +68,7 @@ zetton-inference 是一个用于深度学习推理的开源软件包。它是 [P
 
 ## 贡献指南
 
-我们感谢所有为改进 zetton-inferenece 做出贡献的人。请参考 [贡献指南](.github/CONTRIBUTING.md) 了解参与项目贡献的相关指引。
+我们感谢所有为改进 zetton-inference 做出贡献的人。请参考 [贡献指南](.github/CONTRIBUTING.md) 了解参与项目贡献的相关指引。
 
 ## 致谢
 

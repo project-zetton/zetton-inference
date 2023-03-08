@@ -5,7 +5,7 @@ title: 快速入门指南
 - [快速入门指南](#快速入门指南)
   - [预置条件](#预置条件)
   - [获取并编译 zetton-inference 代码](#获取并编译-zetton-inference-代码)
-  - [在其他项目中使用 zetton-common](#在其他项目中使用-zetton-common)
+  - [在其他项目中使用 zetton-inference](#在其他项目中使用-zetton-inference)
 
 # 快速入门指南
 
@@ -13,7 +13,7 @@ title: 快速入门指南
 
 ## 预置条件
 
-在本教程中，编译并运行 zetton-common 代码需要：
+在本教程中，编译并运行 zetton-inference 代码需要：
 
 1. [zetton-common](https://github.com/project-zetton/zetton-common) 及其依赖的软件环境
 
@@ -21,7 +21,7 @@ title: 快速入门指南
 
 3. [OpenCV](https://opencv.org/): 用于图像处理
 
-上述所有依赖库，可以参考 [zetton-docker](https://github.com/project-zetton/zetton-docker) 中的 `Dockerfile` 进行安装。或者直接使用 zetton-docker 提供的 Docker 容器来运行 zetton-common 代码。
+上述所有依赖库，可以参考 [zetton-docker](https://github.com/project-zetton/zetton-docker) 中的 `Dockerfile` 进行安装。或者直接使用 zetton-docker 提供的 Docker 容器来运行 zetton-inference 代码。
 
 ## 获取并编译 zetton-inference 代码
 
@@ -29,6 +29,6 @@ title: 快速入门指南
 
 具体的构建方法可参照 [zetton-common] 的快速入门指南中的对应部分。
 
-## 在其他项目中使用 zetton-common
+## 在其他项目中使用 zetton-inference
 
-支持在其他的 CMake 项目或者 colcon 工作空间中使用 zetton-common。具体的使用方法可参照 [zetton-common] 的快速入门指南中的对应部分。
+支持在其他的 CMake 项目或者 colcon 工作空间中使用 zetton-inference。具体的使用方法可参照 [zetton-common] 的快速入门指南中的对应部分。

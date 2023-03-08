@@ -10,8 +10,7 @@ body:
     label: Branch
     description: This issue is related to the
     options:
-      - master branch  https://mmdetection.readthedocs.io/en/latest/
-      - 3.x branch https://mmdetection.readthedocs.io/en/3.x/
+      - master branch https://github.com/project-zetton/zetton-inference/tree/master
   validations:
     required: true
 

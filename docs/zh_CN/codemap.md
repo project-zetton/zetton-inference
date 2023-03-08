@@ -8,7 +8,7 @@ title: 代码地图
 
 # 代码地图
 
-本文档旨在帮助您了解 zetton-common 代码的结构和功能。
+本文档旨在帮助您了解 zetton-inference 代码的结构和功能。
 
 ## 目录结构
 
@@ -36,6 +36,8 @@ $ tree -L 3
 
 其中：
 
+- `.github/`：GitHub 相关的配置文件
+- `assets/`：资源文件目录
 - `cmake/` 与 `CMakeLists.txt`：CMake 构建相关的文件
 - `docs/`：文档目录
 - `examples/`：示例代码目录
@@ -44,6 +46,7 @@ $ tree -L 3
 - `tools/`：工具脚本目录
 - `LICENSE`：软件包许可证
 - `README.md`：软件包说明文档
+- `README_zh-CN.md`：软件包说明文档（中文）
 - `package.xml`：软件包描述文件，用于 colcon 构建
 
 ## 模块介绍

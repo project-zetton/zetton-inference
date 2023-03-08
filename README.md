@@ -53,7 +53,14 @@ Please see [get_started.md](docs/en/get_started.md) for the basic usage of zetto
 
 ## Overview of Benchmark and Model Zoo
 
-W.I.P
+| Task     | Model     | ONNX | TensorRT | RKNN | OpenVINO |
+| :------- | :-------- | :--- | :------- | :--- | :------- |
+| 目标检测 | YOLOv5    | ✅    | ✅        | ❌    | ❌        |
+| 目标检测 | YOLOX     | ✅    | ✅        | ❌    | ❌        |
+| 目标检测 | YOLOv7    | ✅    | ✅        | ❌    | ❌        |
+| 目标跟踪 | YOLOv7    | ✅    | ✅        | ❌    | ❌        |
+| 目标跟踪 | DeepSORT  | /    | /        | /    | /        |
+| 目标跟踪 | ByteTrack | /    | /        | /    | /        |
 
 ## FAQ
 

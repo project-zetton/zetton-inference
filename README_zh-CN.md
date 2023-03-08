@@ -46,7 +46,7 @@ zetton-inference 是一个用于深度学习推理的开源软件包。它是 [P
 
 ## 安装
 
-请参考 [快速入门指南](docs/zh-CN/get_started.md) 获取安装说明。
+请参考 [快速入门指南](docs/zh_CN/get_started.md) 获取安装说明。
 
 ## 教程
 
@@ -54,11 +54,18 @@ zetton-inference 是一个用于深度学习推理的开源软件包。它是 [P
 
 ## 基准测试和模型库
 
-W.I.P
+| 任务     | 模型      | ONNX | TensorRT | RKNN | OpenVINO |
+| :------- | :-------- | :--- | :------- | :--- | :------- |
+| 目标检测 | YOLOv5    | ✅    | ✅        | ❌    | ❌        |
+| 目标检测 | YOLOX     | ✅    | ✅        | ❌    | ❌        |
+| 目标检测 | YOLOv7    | ✅    | ✅        | ❌    | ❌        |
+| 目标跟踪 | YOLOv7    | ✅    | ✅        | ❌    | ❌        |
+| 目标跟踪 | DeepSORT  | /    | /        | /    | /        |
+| 目标跟踪 | ByteTrack | /    | /        | /    | /        |
 
 ## 常见问题
 
-请参考 [FAQ](docs/zh-CN/faq.md) 获取常见问题的答案。
+请参考 [FAQ](docs/zh_CN/faq.md) 获取常见问题的答案。
 
 ## 贡献指南
 

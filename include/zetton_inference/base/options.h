@@ -10,10 +10,11 @@
 namespace zetton {
 namespace inference {
 
-class InferenceRuntimeOptions {
+/// \brief options for inference runtime
+struct InferenceRuntimeOptions {
  public:
   InferenceRuntimeOptions() = default;
-  ~InferenceRuntimeOptions() = default;
+  virtual ~InferenceRuntimeOptions() = default;
 
  public:
   /// \brief set path of model file and params file
@@ -22,11 +23,27 @@ class InferenceRuntimeOptions {
   /// \param input_model_format format of input model file
   void SetModelPath(const std::string& model_path,
                     const std::string& params_path = "",
-                    const std::string& input_model_format = "onnx");
+                    const InferenceFrontendType& input_model_format =
+                        InferenceFrontendType::kONNX);
+
+  /// \brief set memory buffer of model file and params file
+  /// \param model_buffer memory buffer of model file in string format
+  /// \param params_buffer memory buffer of params file in string format
+  /// \param input_model_format format of input model file
+  void SetModelBuffer(const std::string& model_buffer,
+                      const std::string& params_buffer = "",
+                      const InferenceFrontendType& input_model_format =
+                          InferenceFrontendType::kONNX);
+
+  /// \brief set encryption key for model file
+  /// \n encryption key is used to decrypt model file if it is encrypted
+  /// \param encryption_key encryption key for model file
+  void SetEncryptionKey(const std::string& input_encryption_key);
+
+  /// \brief set model inference in CPU
+  void UseCpu();
 
   /// \brief set model inference in GPU
-  void UseCpu();
-  /// \brief set model inference in CPU
   /// \param gpu_id id of GPU (or device)
   void UseGpu(int gpu_id = 0);
 
@@ -44,28 +61,6 @@ class InferenceRuntimeOptions {
   void UseOpenVINOBackend();
   /// \brief use RKNN backend
   void UseRKNNBackend();
-
-  /// \brief set input shape for TensorRT backend if the given model contains
-  /// dynamic shape
-  /// \details if opt_shape or max_shape are empty, they will keep same with the
-  /// min_shape, which means the shape will be fixed as min_shape while
-  /// inference
-  /// \param input_name name of input tensor
-  /// \param min_shape the minimum shape
-  /// \param opt_shape the most common shape while inference, default be empty
-  /// \param max_shape the maximum shape, default be empty
-  void SetInputShapeForTensorRT(
-      const std::string& input_name, const std::vector<int32_t>& min_shape,
-      const std::vector<int32_t>& opt_shape = std::vector<int32_t>(),
-      const std::vector<int32_t>& max_shape = std::vector<int32_t>());
-  /// \brief enable half precision (FP16) for TensorRT backend
-  void EnableFP16ForTensorRT();
-  /// \brief disable half precision (FP16) and change to full precision (FP32)
-  /// for TensorRT backend
-  void DisableFP16ForTensorRT();
-  /// \brief set path of cache file while using TensorRT backend
-  /// \param cache_path path of cache file (serialized engine)
-  void SetCacheFileForTensorRT(const std::string& cache_file_path);
 
  public:
   /// \brief format of input original model
@@ -98,27 +93,15 @@ class InferenceRuntimeOptions {
   /// 1: parallel
   int ort_execution_mode = -1;
 
-  /// \brief maximum input tensor shape for TensorRT model inference
-  std::map<std::string, std::vector<int32_t>> trt_max_shape;
-  /// \brief minimum input tensor shape for TensorRT model inference
-  std::map<std::string, std::vector<int32_t>> trt_min_shape;
-  /// \brief optimal input tensor shape for TensorRT model inference
-  std::map<std::string, std::vector<int32_t>> trt_opt_shape;
-  /// \brief serialized TensorRT model file
-  std::string trt_serialize_file = "";
-  /// \brief whether or not to enable FP16 precision in TensorRT model inference
-  bool trt_enable_fp16 = false;
-  /// \brief whether or not to enable INT8 precision in TensorRT model inference
-  bool trt_enable_int8 = false;
-  /// \brief maximum batch size for TensorRT model inference
-  size_t trt_max_batch_size = 32;
-  /// \brief maximum workspace size for TensorRT model inference
-  size_t trt_max_workspace_size = 1 << 30;
-
   /// \brief path of model file
   std::string model_file = "";
   /// \brief path of parameters file, can be empty
   std::string params_file = "";
+  /// \brief whether or not the model file is from memory buffer
+  /// \details if true, the model file and params file is binary data in string
+  bool model_from_memory = false;
+  /// \brief encryption key for model file
+  std::string encryption_key = "";
 };
 
 }  // namespace inference

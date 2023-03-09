@@ -9,22 +9,22 @@
 namespace zetton {
 namespace inference {
 
-bool InferenceRuntime::Init(const InferenceRuntimeOptions& input_options) {
-  options = input_options;
+bool InferenceRuntime::Init(InferenceRuntimeOptions* input_options) {
+  options_ = input_options;
 
   // check inference frontend
-  if (options.model_format == InferenceFrontendType::kAuto) {
-    options.model_format = GuessModelFormat(options.model_file);
-    AINFO_F("Use guessed model format: {}", ToString(options.model_format));
+  if (options_->model_format == InferenceFrontendType::kAuto) {
+    options_->model_format = GuessModelFormat(options_->model_file);
+    AINFO_F("Use guessed model format: {}", ToString(options_->model_format));
   }
 
   // check inference backend
-  if (options.backend == InferenceBackendType::kUnknown) {
+  if (options_->backend == InferenceBackendType::kUnknown) {
     if (IsBackendAvailable(InferenceBackendType::kONNXRuntime)) {
       AINFO_F("Use ONNXRuntime backend by default.");
-      options.backend = InferenceBackendType::kONNXRuntime;
+      options_->backend = InferenceBackendType::kONNXRuntime;
     } else if (IsBackendAvailable(InferenceBackendType::kOpenVINO)) {
-      options.backend = InferenceBackendType::kOpenVINO;
+      options_->backend = InferenceBackendType::kOpenVINO;
       AINFO_F("Use OpenVINO backend by default.");
     } else {
       AWARN_F("No available backend found.");
@@ -33,49 +33,49 @@ bool InferenceRuntime::Init(const InferenceRuntimeOptions& input_options) {
   }
 
   // check device for inference backend
-  if (options.backend == InferenceBackendType::kONNXRuntime) {
+  if (options_->backend == InferenceBackendType::kONNXRuntime) {
     // ONNX Runtime backend supports both CPU and GPU
-    ACHECK_F(options.device == InferenceDeviceType::kCPU ||
-                 options.device == InferenceDeviceType::kGPU,
-             "{} only supports {} and {}.", ToString(options.backend),
+    ACHECK_F(options_->device == InferenceDeviceType::kCPU ||
+                 options_->device == InferenceDeviceType::kGPU,
+             "{} only supports {} and {}.", ToString(options_->backend),
              ToString(InferenceDeviceType::kCPU),
              ToString(InferenceDeviceType::kGPU));
     CreateBackendForONNXRuntime();
-  } else if (options.backend == InferenceBackendType::kTensorRT) {
+  } else if (options_->backend == InferenceBackendType::kTensorRT) {
     // TensorRT backend supports GPU only
-    ACHECK_F(options.device == InferenceDeviceType::kGPU,
-             "{} only supports {}.", ToString(options.backend),
+    ACHECK_F(options_->device == InferenceDeviceType::kGPU,
+             "{} only supports {}.", ToString(options_->backend),
              ToString(InferenceDeviceType::kGPU));
     CreateBackendForTensorRT();
-  } else if (options.backend == InferenceBackendType::kNCNN) {
+  } else if (options_->backend == InferenceBackendType::kNCNN) {
     // NCNN backend supports both CPU and GPU
-    ACHECK_F(options.device == InferenceDeviceType::kCPU ||
-                 options.device == InferenceDeviceType::kGPU,
-             "{} only supports {} and {}.", ToString(options.backend),
+    ACHECK_F(options_->device == InferenceDeviceType::kCPU ||
+                 options_->device == InferenceDeviceType::kGPU,
+             "{} only supports {} and {}.", ToString(options_->backend),
              ToString(InferenceDeviceType::kCPU),
              ToString(InferenceDeviceType::kGPU));
     CreateBackendForNCNN();
-  } else if (options.backend == InferenceBackendType::kOpenVINO) {
+  } else if (options_->backend == InferenceBackendType::kOpenVINO) {
     // OpenVINO backend supports CPU only
-    ACHECK_F(options.device == InferenceDeviceType::kCPU,
-             "{} only supports {}.", ToString(options.backend),
+    ACHECK_F(options_->device == InferenceDeviceType::kCPU,
+             "{} only supports {}.", ToString(options_->backend),
              ToString(InferenceDeviceType::kCPU));
     CreateBackendForOpenVINO();
-  } else if (options.backend == InferenceBackendType::kRKNN) {
+  } else if (options_->backend == InferenceBackendType::kRKNN) {
     // RKNN backend supports both CPU and NPU
-    ACHECK_F(options.device == InferenceDeviceType::kCPU ||
-                 options.device == InferenceDeviceType::kNPU,
-             "{} only supports {} and {}.", ToString(options.backend),
+    ACHECK_F(options_->device == InferenceDeviceType::kCPU ||
+                 options_->device == InferenceDeviceType::kNPU,
+             "{} only supports {} and {}.", ToString(options_->backend),
              ToString(InferenceDeviceType::kCPU),
              ToString(InferenceDeviceType::kNPU));
     CreateBackendForRKNN();
   } else {
-    AINFO_F("Invalid backend: {}.", ToString(options.backend));
+    AINFO_F("Invalid backend: {}.", ToString(options_->backend));
     return false;
   }
 
   AINFO_F("Runtime initialized with backend {} in device {}.",
-          ToString(options.backend), ToString(options.device));
+          ToString(options_->backend), ToString(options_->device));
 
   return true;
 }
@@ -114,7 +114,7 @@ void InferenceRuntime::CreateBackendForTensorRT() {
   // check if backend is created successfully
   ACHECK_F(backend_ != nullptr, "Failed to create TensorRT backend.");
   // initialize backend and check if it's successful
-  ACHECK_F(backend_->Init(options), "Failed to init TensorRT backend.");
+  ACHECK_F(backend_->Init(options_), "Failed to init TensorRT backend.");
 }
 
 }  // namespace inference

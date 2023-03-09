@@ -20,7 +20,7 @@ class InferenceRuntime {
  public:
   /// \brief initialize inference runtime with options
   /// \param options options for inference runtime
-  bool Init(const InferenceRuntimeOptions& options);
+  bool Init(InferenceRuntimeOptions* options);
 
   /// \brief infer model with input tensors and return output tensors
   /// \param input_tensors input tensors
@@ -54,7 +54,7 @@ class InferenceRuntime {
 
  private:
   /// \brief options for model inference runtime
-  InferenceRuntimeOptions options;
+  InferenceRuntimeOptions* options_;
   /// \brief backend engine for model inference runtime
   std::unique_ptr<BaseInferenceBackend> backend_;
 };

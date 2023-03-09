@@ -34,7 +34,7 @@ class BaseInferenceBackend {
   virtual TensorInfo GetOutputInfo(int index) = 0;
 
  public:
-  virtual bool Init(const InferenceRuntimeOptions& options) = 0;
+  virtual bool Init(const InferenceRuntimeOptions* options) = 0;
   /// \brief run model inference with input tensors and save the results to
   /// output tensors
   /// \param input_tensors input tensors

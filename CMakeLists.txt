@@ -34,6 +34,7 @@ zetton_cc_settings()
 find_package(Threads)
 find_package(Eigen3 REQUIRED)
 find_package(OpenCV 4 REQUIRED)
+find_package(Catch2 REQUIRED)
 
 # ---------------#
 # CUDA libraries #
@@ -114,4 +115,5 @@ zetton_cc_examples()
 # Test targets #
 # -------------#
 
-zetton_cc_tests("inference")
+enable_testing()
+zetton_cc_tests("base")

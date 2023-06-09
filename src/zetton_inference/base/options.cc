@@ -8,13 +8,20 @@ namespace inference {
 
 void InferenceRuntimeOptions::SetModelPath(
     const std::string& model_path, const std::string& params_path,
-    const std::string& input_model_format) {
-  if (input_model_format == "onnx") {
-    model_file = model_path;
-    model_format = InferenceFrontendType::kONNX;
-  } else {
-    AFATAL_F("Invalid model path: {}", model_path);
-  }
+    const InferenceFrontendType& format) {
+  model_file = model_path;
+  params_file = params_path;
+  model_format = format;
+  model_from_memory = false;
+}
+
+void InferenceRuntimeOptions::SetModelBuffer(
+    const std::string& model_buffer, const std::string& params_buffer,
+    const InferenceFrontendType& format) {
+  model_file = model_buffer;
+  params_file = params_buffer;
+  model_format = format;
+  model_from_memory = true;
 }
 
 void InferenceRuntimeOptions::UseGpu(int gpu_id) {

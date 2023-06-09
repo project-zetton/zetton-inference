@@ -1,0 +1,62 @@
+name: build
+
+on:
+  push:
+    branches:
+      - "master"
+    paths-ignore:
+      - ".github/**.md"
+      - "docs/**"
+      - "tools/**"
+      - "README.md"
+      - "README_zh-CN.md"
+
+  pull_request:
+    branches:
+      - "master"
+    paths-ignore:
+      - ".github/**.md"
+      - "docs/**"
+      - "tools/**"
+      - "README.md"
+      - "README_zh-CN.md"
+
+permissions:
+  contents: read
+
+jobs:
+  test_zetton_inference:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Clone dependencies on the same level
+        run: |
+          git clone https://github.com/project-zetton/zetton-common.git ../zetton-common
+          git clone https://github.com/project-zetton/zetton-docker.git ../zetton-docker
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            cmake \
+            libopencv-dev \
+            libeigen3-dev \
+            libfmt-dev
+      - name: Install other dependencies
+        run: |
+          sudo ../zetton-docker/deps/install_absl.sh
+          sudo ../zetton-docker/deps/install_catch2.sh
+      - name: Install colcon
+        run: |
+          sudo apt-get install -y python3 python3-pip
+          sudo python3 -m pip install -U colcon-common-extensions
+      - name: Build
+        run: |
+          cd ..
+          colcon build --packages-up-to zetton_inference --cmake-args -DCMAKE_BUILD_TYPE=Release
+      - name: Test
+        run: |
+          cd ..
+          colcon test --packages-select zetton_inference --return-code-on-test-failure
+          colcon test-result --verbose

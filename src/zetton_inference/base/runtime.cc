@@ -1,5 +1,7 @@
 #include "zetton_inference/base/runtime.h"
 
+#include <algorithm>
+
 #include "zetton_common/log/log.h"
 #include "zetton_inference/base/options.h"
 #include "zetton_inference/base/type.h"
@@ -131,8 +133,8 @@ void InferenceRuntime::BindOutputTensor(const std::string& name,
 
 InferenceRuntime* InferenceRuntime::Clone(void* stream, int device_id) {
   auto* runtime = new InferenceRuntime();
-  AINFO_F("Runtime Clone with Backend:: {} in {}.", options.backend,
-          options.device);
+  AINFO_F("Clone Runtime with backend [{}] on device [{}].",
+          ToString(options.backend), ToString(options.device));
   runtime->options = options;
   runtime->backend_ = backend_->Clone(options, stream, device_id);
   return runtime;

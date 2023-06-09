@@ -373,7 +373,7 @@ void Tensor::CopyBuffer(void* dst, const void* src, size_t nbytes,
   } else {
     if (data_is_pinned_memory) {
 #if USE_GPU == 1
-      ACHECK_F(cudaMemcpy(dst, src, nbytes, cudaMemcpyHotToHost) == 0,
+      ACHECK_F(cudaMemcpy(dst, src, nbytes, cudaMemcpyHostToHost) == 0,
                "Failed to copy data from host to host.");
 #else
       AFATAL_F(

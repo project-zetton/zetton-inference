@@ -1,12 +1,14 @@
 #pragma once
 
+#include <map>
 #include <string>
+#include <vector>
 
 namespace zetton {
 namespace inference {
 
 /// \brief device type for model inference
-enum class InferenceDeviceType { kUnknwon = 0, kCPU, kGPU, kNPU };
+enum class InferenceDeviceType { kUnknwon = 0, kCPU, kGPU, kRKNPU2 };
 
 /// \brief data type for model inference
 enum class InferenceDataType {
@@ -35,11 +37,65 @@ enum class InferenceBackendType {
 /// \brief frontend type (input model format) for model inference
 enum class InferenceFrontendType {
   kUnknown,
-  kSerialized,
   kAuto,
   kONNX,
+  kSerialized,
+  kRKNN,
   // kPyTorch,
   // kTensorFlow,
+};
+
+/// \brief all supported backend types w.r.t. frontend type (model format)
+static std::map<InferenceFrontendType, std::vector<InferenceBackendType>>
+    s_default_backends_by_format = {
+        {
+            InferenceFrontendType::kONNX,
+            {
+                InferenceBackendType::kTensorRT,
+                InferenceBackendType::kONNXRuntime,
+                InferenceBackendType::kNCNN,
+                InferenceBackendType::kOpenVINO,
+            },
+        },
+        {
+            InferenceFrontendType::kSerialized,
+            {
+                InferenceBackendType::kTensorRT,
+            },
+        },
+        {
+            InferenceFrontendType::kRKNN,
+            {
+                InferenceBackendType::kRKNN,
+            },
+        },
+};
+
+/// \brief all supported backend types w.r.t. device type
+static std::map<InferenceDeviceType, std::vector<InferenceBackendType>>
+    s_default_backends_by_device = {
+        {
+            InferenceDeviceType::kCPU,
+            {
+                InferenceBackendType::kONNXRuntime,
+                InferenceBackendType::kOpenVINO,
+                InferenceBackendType::kNCNN,
+            },
+        },
+        {
+            InferenceDeviceType::kGPU,
+            {
+                InferenceBackendType::kTensorRT,
+                InferenceBackendType::kONNXRuntime,
+                InferenceBackendType::kNCNN,
+            },
+        },
+        {
+            InferenceDeviceType::kRKNPU2,
+            {
+                InferenceBackendType::kRKNN,
+            },
+        },
 };
 
 /// \brief convert InferenceDeviceType to std::string

@@ -24,5 +24,24 @@ bool CheckModelFormat(const std::string& model_file,
 /// \param model_file model file path
 InferenceFrontendType GuessModelFormat(const std::string& model_file);
 
+/// \brief Check if the specified inference backend supports the specified
+/// inference frontend
+bool IsBackendSupported(const InferenceFrontendType& model_format,
+                        const InferenceBackendType& backend);
+
+/// \brief Check if the specified inference backend supports the specified
+/// inference device
+bool IsBackendSupported(const InferenceDeviceType& device,
+                        const InferenceBackendType& backend);
+
+/// \brief Automatically select an inference backend for the specified model
+/// format and device
+/// \param model_format inference frontend type
+/// \param device inference device type
+/// \param backend selected inference backend
+bool AutoSelecteBackend(const InferenceFrontendType& model_format,
+                        const InferenceDeviceType& device,
+                        InferenceBackendType& backend);
+
 }  // namespace inference
 }  // namespace zetton

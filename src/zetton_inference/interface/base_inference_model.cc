@@ -33,7 +33,7 @@ bool BaseInferenceModel::InitRuntime() {
 #ifndef USE_GPU
     use_gpu = false;
 #endif
-    bool use_npu = (runtime_options.device == InferenceDeviceType::kNPU);
+    bool use_npu = (runtime_options.device == InferenceDeviceType::kRKNPU2);
 
     // check whether the model is supported by the set backend
     bool is_supported = false;
@@ -99,7 +99,7 @@ bool BaseInferenceModel::InitRuntime() {
     AERROR_F("The compiled library doesn't support GPU now.");
     return false;
 #endif
-  } else if (runtime_options.device == InferenceDeviceType::kNPU) {
+  } else if (runtime_options.device == InferenceDeviceType::kRKNPU2) {
     AERROR_F("NPU is not supported now.");
     return false;
   }

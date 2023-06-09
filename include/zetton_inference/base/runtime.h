@@ -48,16 +48,16 @@ class InferenceRuntime {
 
   /// \brief get the number of inputs of inference backend
   /// \return the number of inputs
-  int NumInputs() { return backend_->NumInputs(); }
+  int NumInputs();
 
   /// \brief get the number of outputs of inference backend
   /// \return the number of outputs
-  int NumOutputs() { return backend_->NumOutputs(); }
+  int NumOutputs();
 
   /// \brief get the input info of inference backend
   /// \param index the index of input tensor
   /// \return the input tensor info
-  TensorInfo GetInputInfo(int index) { return backend_->GetInputInfo(index); }
+  TensorInfo GetInputInfo(int index);
 
   /// \brief get all of the input infos of inference backend
   /// \return the input tensor infos
@@ -66,7 +66,7 @@ class InferenceRuntime {
   /// \brief get the output info of inference backend
   /// \param index the index of output tensor
   /// \return the output tensor info
-  TensorInfo GetOutputInfo(int index) { return backend_->GetOutputInfo(index); }
+  TensorInfo GetOutputInfo(int index);
 
   /// \brief get all of the output infos of inference backend
   /// \return the output tensor infos

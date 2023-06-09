@@ -18,64 +18,36 @@ bool InferenceRuntime::Init(const InferenceRuntimeOptions& input_options) {
     AINFO_F("Use guessed model format: {}", ToString(options.model_format));
   }
 
-  // check inference backend
+  // choose backend automatically if not specified
   if (options.backend == InferenceBackendType::kUnknown) {
-    if (IsBackendAvailable(InferenceBackendType::kONNXRuntime)) {
-      AINFO_F("Use ONNXRuntime backend by default.");
-      options.backend = InferenceBackendType::kONNXRuntime;
-    } else if (IsBackendAvailable(InferenceBackendType::kOpenVINO)) {
-      options.backend = InferenceBackendType::kOpenVINO;
-      AINFO_F("Use OpenVINO backend by default.");
-    } else {
-      AWARN_F("No available backend found.");
+    if (!AutoSelecteBackend(options.model_format, options.device,
+                            options.backend)) {
+      AWARN_F("Failed to select backend automatically.");
       return false;
     }
   }
 
-  // check device for inference backend
+  // create inference backend
   if (options.backend == InferenceBackendType::kONNXRuntime) {
-    // ONNX Runtime backend supports both CPU and GPU
-    ACHECK_F(options.device == InferenceDeviceType::kCPU ||
-                 options.device == InferenceDeviceType::kGPU,
-             "{} only supports {} and {}.", ToString(options.backend),
-             ToString(InferenceDeviceType::kCPU),
-             ToString(InferenceDeviceType::kGPU));
     CreateBackendForONNXRuntime();
   } else if (options.backend == InferenceBackendType::kTensorRT) {
-    // TensorRT backend supports GPU only
-    ACHECK_F(options.device == InferenceDeviceType::kGPU,
-             "{} only supports {}.", ToString(options.backend),
-             ToString(InferenceDeviceType::kGPU));
     CreateBackendForTensorRT();
   } else if (options.backend == InferenceBackendType::kNCNN) {
-    // NCNN backend supports both CPU and GPU
-    ACHECK_F(options.device == InferenceDeviceType::kCPU ||
-                 options.device == InferenceDeviceType::kGPU,
-             "{} only supports {} and {}.", ToString(options.backend),
-             ToString(InferenceDeviceType::kCPU),
-             ToString(InferenceDeviceType::kGPU));
     CreateBackendForNCNN();
   } else if (options.backend == InferenceBackendType::kOpenVINO) {
-    // OpenVINO backend supports CPU only
-    ACHECK_F(options.device == InferenceDeviceType::kCPU,
-             "{} only supports {}.", ToString(options.backend),
-             ToString(InferenceDeviceType::kCPU));
     CreateBackendForOpenVINO();
   } else if (options.backend == InferenceBackendType::kRKNN) {
-    // RKNN backend supports both CPU and NPU
-    ACHECK_F(options.device == InferenceDeviceType::kCPU ||
-                 options.device == InferenceDeviceType::kNPU,
-             "{} only supports {} and {}.", ToString(options.backend),
-             ToString(InferenceDeviceType::kCPU),
-             ToString(InferenceDeviceType::kNPU));
     CreateBackendForRKNN();
   } else {
     AINFO_F("Invalid backend: {}.", ToString(options.backend));
     return false;
   }
 
-  AINFO_F("Runtime initialized with backend {} in device {}.",
-          ToString(options.backend), ToString(options.device));
+  AINFO_F(
+      "Runtime initialized with backend [{}] with model format [{}] on device "
+      "{}.",
+      ToString(options.backend), ToString(options.model_format),
+      ToString(options.device));
 
   return true;
 }
@@ -83,17 +55,88 @@ bool InferenceRuntime::Init(const InferenceRuntimeOptions& input_options) {
 bool InferenceRuntime::Infer(std::vector<Tensor>& input_tensors,
                              std::vector<Tensor>* output_tensors) {
   return backend_->Infer(input_tensors, output_tensors);
-};
+}
 
 bool InferenceRuntime::Infer() { return true; }
 
-void InferenceRuntime::BindOutputTensor(const std::string& name,
-                                        Tensor& tensor) {}
+int InferenceRuntime::NumInputs() { return backend_->NumInputs(); }
+
+int InferenceRuntime::NumOutputs() { return backend_->NumOutputs(); }
+
+TensorInfo InferenceRuntime::GetInputInfo(int index) {
+  return backend_->GetInputInfo(index);
+}
+
+std::vector<TensorInfo> InferenceRuntime::GetInputInfos() {
+  return backend_->GetInputInfos();
+}
+
+TensorInfo InferenceRuntime::GetOutputInfo(int index) {
+  return backend_->GetOutputInfo(index);
+}
+
+std::vector<TensorInfo> InferenceRuntime::GetOutputInfos() {
+  return backend_->GetOutputInfos();
+}
+
+Tensor* InferenceRuntime::GetOutputTensor(const std::string& name) {
+  for (auto& output_tensor : output_tensors_) {
+    if (output_tensor.name == name) {
+      return &output_tensor;
+    }
+  }
+  AWARN_F("Output tensor [{}] not found.", name);
+  return nullptr;
+}
 
 void InferenceRuntime::BindInputTensor(const std::string& name,
-                                       Tensor& tensor) {}
+                                       Tensor& tensor) {
+  // try to find the tensor with the same name
+  auto it = std::find_if(
+      input_tensors_.begin(), input_tensors_.end(),
+      [&name](const Tensor& tensor) { return tensor.name == name; });
+  // if found, just set the external data
+  if (it != input_tensors_.end()) {
+    it->SetExternalData(tensor.shape, tensor.dtype, tensor.MutableData(),
+                        tensor.device, tensor.device_id);
+  }
+  // if not, create a new tensor with external data
+  else {
+    Tensor new_tensor;
+    new_tensor.SetExternalData(tensor.shape, tensor.dtype, tensor.MutableData(),
+                               tensor.device, tensor.device_id);
+    input_tensors_.emplace_back(std::move(new_tensor));
+  }
+}
 
-InferenceRuntime* InferenceRuntime::Clone(void* stream, int device_id) {}
+void InferenceRuntime::BindOutputTensor(const std::string& name,
+                                        Tensor& tensor) {
+  // try to find the tensor with the same name
+  auto it = std::find_if(
+      output_tensors_.begin(), output_tensors_.end(),
+      [&name](const Tensor& tensor) { return tensor.name == name; });
+  // if found, just set the external data
+  if (it != output_tensors_.end()) {
+    it->SetExternalData(tensor.shape, tensor.dtype, tensor.MutableData(),
+                        tensor.device, tensor.device_id);
+  }
+  // if not, create a new tensor with external data
+  else {
+    Tensor new_tensor;
+    new_tensor.SetExternalData(tensor.shape, tensor.dtype, tensor.MutableData(),
+                               tensor.device, tensor.device_id);
+    output_tensors_.emplace_back(std::move(new_tensor));
+  }
+}
+
+InferenceRuntime* InferenceRuntime::Clone(void* stream, int device_id) {
+  auto* runtime = new InferenceRuntime();
+  AINFO_F("Runtime Clone with Backend:: {} in {}.", options.backend,
+          options.device);
+  runtime->options = options;
+  runtime->backend_ = backend_->Clone(options, stream, device_id);
+  return runtime;
+}
 
 void InferenceRuntime::CreateBackendForOpenVINO() {
   ACHECK_F(IsBackendAvailable(InferenceBackendType::kOpenVINO),

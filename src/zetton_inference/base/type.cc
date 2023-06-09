@@ -10,7 +10,7 @@ std::string ToString(const InferenceDeviceType& device) {
     return "CPU";
   } else if (device == InferenceDeviceType::kGPU) {
     return "GPU";
-  } else if (device == InferenceDeviceType::kNPU) {
+  } else if (device == InferenceDeviceType::kRKNPU2) {
     return "NPU";
   } else {
     return "Unknown";

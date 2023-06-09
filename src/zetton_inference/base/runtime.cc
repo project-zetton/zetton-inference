@@ -80,6 +80,21 @@ bool InferenceRuntime::Init(const InferenceRuntimeOptions& input_options) {
   return true;
 }
 
+bool InferenceRuntime::Infer(std::vector<Tensor>& input_tensors,
+                             std::vector<Tensor>* output_tensors) {
+  return backend_->Infer(input_tensors, output_tensors);
+};
+
+bool InferenceRuntime::Infer() { return true; }
+
+void InferenceRuntime::BindOutputTensor(const std::string& name,
+                                        Tensor& tensor) {}
+
+void InferenceRuntime::BindInputTensor(const std::string& name,
+                                       Tensor& tensor) {}
+
+InferenceRuntime* InferenceRuntime::Clone(void* stream, int device_id) {}
+
 void InferenceRuntime::CreateBackendForOpenVINO() {
   ACHECK_F(IsBackendAvailable(InferenceBackendType::kOpenVINO),
            "OpenVINO backend is not available.");

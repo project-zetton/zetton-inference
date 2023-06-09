@@ -105,7 +105,7 @@ const void* Tensor::Data() const {
 
 const void* Tensor::CpuData() const {
   if (device == InferenceDeviceType::kGPU) {
-#ifdef USE_GPU
+#if USE_GPU == 1
     auto* cpu_ptr = const_cast<std::vector<int8_t>*>(&temporary_cpu_buffer);
     cpu_ptr->resize(Nbytes());
     // need to copy cuda mem to cpu first
@@ -235,7 +235,7 @@ void Tensor::Print(const std::string& prefix) {
 
 bool Tensor::ReallocFn(size_t nbytes) {
   if (device == InferenceDeviceType::kGPU) {
-#ifdef USE_GPU
+#if USE_GPU == 1
     size_t original_nbytes = Nbytes();
     if (nbytes > original_nbytes) {
       if (buffer_ != nullptr) {
@@ -258,7 +258,7 @@ void Tensor::FreeFn() {
   if (external_data_ptr != nullptr) external_data_ptr = nullptr;
   if (buffer_ != nullptr) {
     if (device == InferenceDeviceType::kGPU) {
-#ifdef USE_GPU
+#if USE_GPU == 1
       ZettonFreeDevice(buffer_);
 #endif
     } else {
@@ -270,7 +270,7 @@ void Tensor::FreeFn() {
 
 void Tensor::CopyBuffer(void* dst, const void* src, size_t nbytes) {
   if (device == InferenceDeviceType::kGPU) {
-#ifdef USE_GPU
+#if USE_GPU == 1
     ACHECK_F(cudaMemcpy(dst, src, nbytes, cudaMemcpyDeviceToDevice) == 0,
              "Failed to copy data from device to device.");
 

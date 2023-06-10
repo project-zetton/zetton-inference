@@ -13,7 +13,7 @@ namespace inference {
 class BaseInferenceModel {
  public:
   /// \brief initialize inference model with options
-  virtual bool Init(const InferenceRuntimeOptions& options) = 0;
+  virtual bool Init(InferenceRuntimeOptions* options) = 0;
 
   /// \brief run model inference with input tensors and save the results to
   /// output tensors
@@ -70,7 +70,7 @@ class BaseInferenceModel {
 
  public:
   /// \brief options of the inference model
-  InferenceRuntimeOptions runtime_options;
+  InferenceRuntimeOptions* runtime_options;
   /// \brief available inference backends on CPU
   std::vector<InferenceBackendType> valid_cpu_backends = {
       InferenceBackendType::kONNXRuntime};

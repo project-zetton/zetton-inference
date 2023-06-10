@@ -11,45 +11,45 @@
 namespace zetton {
 namespace inference {
 
-bool InferenceRuntime::Init(const InferenceRuntimeOptions& input_options) {
-  options = input_options;
+bool InferenceRuntime::Init(InferenceRuntimeOptions* input_options) {
+  options_ = input_options;
 
   // check inference frontend
-  if (options.model_format == InferenceFrontendType::kAuto) {
-    options.model_format = GuessModelFormat(options.model_file);
-    AINFO_F("Use guessed model format: {}", ToString(options.model_format));
+  if (options_->model_format == InferenceFrontendType::kAuto) {
+    options_->model_format = GuessModelFormat(options_->model_file);
+    AINFO_F("Use guessed model format: {}", ToString(options_->model_format));
   }
 
   // choose backend automatically if not specified
-  if (options.backend == InferenceBackendType::kUnknown) {
-    if (!AutoSelecteBackend(options.model_format, options.device,
-                            options.backend)) {
+  if (options_->backend == InferenceBackendType::kUnknown) {
+    if (!AutoSelecteBackend(options_->model_format, options_->device,
+                            options_->backend)) {
       AWARN_F("Failed to select backend automatically.");
       return false;
     }
   }
 
   // create inference backend
-  if (options.backend == InferenceBackendType::kONNXRuntime) {
+  if (options_->backend == InferenceBackendType::kONNXRuntime) {
     CreateBackendForONNXRuntime();
-  } else if (options.backend == InferenceBackendType::kTensorRT) {
+  } else if (options_->backend == InferenceBackendType::kTensorRT) {
     CreateBackendForTensorRT();
-  } else if (options.backend == InferenceBackendType::kNCNN) {
+  } else if (options_->backend == InferenceBackendType::kNCNN) {
     CreateBackendForNCNN();
-  } else if (options.backend == InferenceBackendType::kOpenVINO) {
+  } else if (options_->backend == InferenceBackendType::kOpenVINO) {
     CreateBackendForOpenVINO();
-  } else if (options.backend == InferenceBackendType::kRKNN) {
+  } else if (options_->backend == InferenceBackendType::kRKNN) {
     CreateBackendForRKNN();
   } else {
-    AINFO_F("Invalid backend: {}.", ToString(options.backend));
+    AINFO_F("Invalid backend: {}.", ToString(options_->backend));
     return false;
   }
 
   AINFO_F(
       "Runtime initialized with backend [{}] with model format [{}] on device "
       "{}.",
-      ToString(options.backend), ToString(options.model_format),
-      ToString(options.device));
+      ToString(options_->backend), ToString(options_->model_format),
+      ToString(options_->device));
 
   return true;
 }
@@ -134,9 +134,9 @@ void InferenceRuntime::BindOutputTensor(const std::string& name,
 InferenceRuntime* InferenceRuntime::Clone(void* stream, int device_id) {
   auto* runtime = new InferenceRuntime();
   AINFO_F("Clone Runtime with backend [{}] on device [{}].",
-          ToString(options.backend), ToString(options.device));
-  runtime->options = options;
-  runtime->backend_ = backend_->Clone(options, stream, device_id);
+          ToString(options_->backend), ToString(options_->device));
+  runtime->options_ = options_;
+  runtime->backend_ = backend_->Clone(options_, stream, device_id);
   return runtime;
 }
 
@@ -174,7 +174,7 @@ void InferenceRuntime::CreateBackendForTensorRT() {
   // check if backend is created successfully
   ACHECK_F(backend_ != nullptr, "Failed to create TensorRT backend.");
   // initialize backend and check if it's successful
-  ACHECK_F(backend_->Init(options), "Failed to init TensorRT backend.");
+  ACHECK_F(backend_->Init(options_), "Failed to init TensorRT backend.");
 }
 
 }  // namespace inference

@@ -9,18 +9,18 @@ using namespace zetton::inference;
 TEST_CASE("Test InferenceRuntime initialization", "[InferenceRuntime]") {
   SECTION("Initialization with empty options") {
     InferenceRuntime runtime;
-    InferenceRuntimeOptions options;
-    REQUIRE_FALSE(runtime.Init(options));
+    auto options = std::make_shared<InferenceRuntimeOptions>();
+    REQUIRE_FALSE(runtime.Init(options.get()));
   }
 
   SECTION("Initialization with valid options") {
     InferenceRuntime runtime;
-    InferenceRuntimeOptions options;
-    options.model_format = InferenceFrontendType::kONNX;
-    options.device = InferenceDeviceType::kCPU;
-    options.backend = InferenceBackendType::kONNXRuntime;
+    auto options = std::make_shared<InferenceRuntimeOptions>();
+    options->model_format = InferenceFrontendType::kONNX;
+    options->device = InferenceDeviceType::kCPU;
+    options->backend = InferenceBackendType::kONNXRuntime;
     if (IsBackendAvailable(InferenceBackendType::kONNXRuntime)) {
-      REQUIRE(runtime.Init(options));
+      REQUIRE(runtime.Init(options.get()));
     }
   }
 }

@@ -11,8 +11,8 @@ namespace inference {
 
 bool BaseInferenceModel::InitRuntime() {
   // check inference frontend
-  ACHECK_F(CheckModelFormat(runtime_options.model_file,
-                            runtime_options.model_format),
+  ACHECK_F(CheckModelFormat(runtime_options->model_file,
+                            runtime_options->model_format),
            "Failed to check model format.");
 
   // check whether the model is initialized
@@ -22,38 +22,38 @@ bool BaseInferenceModel::InitRuntime() {
   }
 
   // check inference backend
-  if (runtime_options.backend != InferenceBackendType::kUnknown) {
-    if (!IsBackendAvailable(runtime_options.backend)) {
+  if (runtime_options->backend != InferenceBackendType::kUnknown) {
+    if (!IsBackendAvailable(runtime_options->backend)) {
       AERROR_F("Backend {} is not available.",
-               ToString(runtime_options.backend));
+               ToString(runtime_options->backend));
       return false;
     }
 
-    bool use_gpu = (runtime_options.device == InferenceDeviceType::kGPU);
+    bool use_gpu = (runtime_options->device == InferenceDeviceType::kGPU);
 #ifndef USE_GPU
     use_gpu = false;
 #endif
-    bool use_npu = (runtime_options.device == InferenceDeviceType::kRKNPU2);
+    bool use_npu = (runtime_options->device == InferenceDeviceType::kRKNPU2);
 
     // check whether the model is supported by the set backend
     bool is_supported = false;
     if (use_gpu) {
       for (auto& item : valid_gpu_backends) {
-        if (item == runtime_options.backend) {
+        if (item == runtime_options->backend) {
           is_supported = true;
           break;
         }
       }
     } else if (use_npu) {
       for (auto& item : valid_npu_backends) {
-        if (item == runtime_options.backend) {
+        if (item == runtime_options->backend) {
           is_supported = true;
           break;
         }
       }
     } else {
       for (auto& item : valid_cpu_backends) {
-        if (item == runtime_options.backend) {
+        if (item == runtime_options->backend) {
           is_supported = true;
           break;
         }
@@ -62,7 +62,7 @@ bool BaseInferenceModel::InitRuntime() {
 
     if (is_supported) {
       // just use the set backend
-      AINFO_F("Use {} backend.", ToString(runtime_options.backend));
+      AINFO_F("Use {} backend.", ToString(runtime_options->backend));
       runtime_ = std::make_unique<InferenceRuntime>();
       if (!runtime_->Init(runtime_options)) {
         return false;
@@ -72,7 +72,7 @@ bool BaseInferenceModel::InitRuntime() {
     } else {
       // try to find a supported backend
       AWARN_F("Invalid backend {} for model {}.",
-              ToString(runtime_options.backend), Name());
+              ToString(runtime_options->backend), Name());
       if (use_gpu) {
         ACHECK_F(valid_gpu_backends.size() > 0,
                  "No available GPU backend found.");
@@ -90,20 +90,20 @@ bool BaseInferenceModel::InitRuntime() {
   }
 
   // check device type and create backend
-  if (runtime_options.device == InferenceDeviceType::kCPU) {
+  if (runtime_options->device == InferenceDeviceType::kCPU) {
     return CreateCpuBackend();
-  } else if (runtime_options.device == InferenceDeviceType::kGPU) {
+  } else if (runtime_options->device == InferenceDeviceType::kGPU) {
 #ifdef USE_GPU
     return CreateGpuBackend();
 #else
     AERROR_F("The compiled library doesn't support GPU now.");
     return false;
 #endif
-  } else if (runtime_options.device == InferenceDeviceType::kRKNPU2) {
+  } else if (runtime_options->device == InferenceDeviceType::kRKNPU2) {
     AERROR_F("NPU is not supported now.");
     return false;
   }
-  AERROR_F("Invalid device type {}.", ToString(runtime_options.device));
+  AERROR_F("Invalid device type {}.", ToString(runtime_options->device));
   return false;
 }
 
@@ -117,7 +117,7 @@ bool BaseInferenceModel::CreateCpuBackend() {
     if (!IsBackendAvailable(valid_cpu_backend)) {
       continue;
     }
-    runtime_options.backend = valid_cpu_backend;
+    runtime_options->backend = valid_cpu_backend;
     runtime_ = std::make_unique<InferenceRuntime>();
     if (!runtime_->Init(runtime_options)) {
       return false;
@@ -139,7 +139,7 @@ bool BaseInferenceModel::CreateGpuBackend() {
     if (!IsBackendAvailable(valid_gpu_backend)) {
       continue;
     }
-    runtime_options.backend = valid_gpu_backend;
+    runtime_options->backend = valid_gpu_backend;
     runtime_ = std::make_unique<InferenceRuntime>();
     if (!runtime_->Init(runtime_options)) {
       return false;
@@ -161,7 +161,7 @@ bool BaseInferenceModel::CreateNpuBackend() {
     if (!IsBackendAvailable(valid_npu_backend)) {
       continue;
     }
-    runtime_options.backend = valid_npu_backend;
+    runtime_options->backend = valid_npu_backend;
     runtime_ = std::make_unique<InferenceRuntime>();
     if (!runtime_->Init(runtime_options)) {
       return false;

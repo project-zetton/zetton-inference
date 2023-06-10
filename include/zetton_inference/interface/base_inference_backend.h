@@ -47,7 +47,7 @@ class BaseInferenceBackend {
   /// \brief initialize inference backend with options
   /// \param options options for inference backend
   /// \return true if success, otherwise false
-  virtual bool Init(const InferenceRuntimeOptions& options) = 0;
+  virtual bool Init(const InferenceRuntimeOptions* options) = 0;
 
   /// \brief run model inference with input tensors and save the results to
   /// output tensors
@@ -59,10 +59,11 @@ class BaseInferenceBackend {
   // Optional: For those backends which can share memory
   // while creating multiple inference engines with same model file
   virtual std::unique_ptr<BaseInferenceBackend> Clone(
-      InferenceRuntimeOptions& runtime_option, void* stream = nullptr,
+      const InferenceRuntimeOptions* runtime_option, void* stream = nullptr,
       int device_id = -1) {
     AERROR_F("Cloning is not supported for backend [{}] on device [{}]",
-             ToString(runtime_option.backend), ToString(runtime_option.device));
+             ToString(runtime_option->backend),
+             ToString(runtime_option->device));
     return nullptr;
   }
 

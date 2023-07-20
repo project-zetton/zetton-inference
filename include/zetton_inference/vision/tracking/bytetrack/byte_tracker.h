@@ -2,8 +2,8 @@
 
 #include <memory>
 
-#include "zetton_inference/vision/base/result.h"
-#include "zetton_inference/vision/interface/base_tracker.h"
+#include "zetton_inference/vision/common/result.h"
+#include "zetton_inference/vision/tracking/base.h"
 #include "zetton_inference/vision/tracking/bytetrack/kalman_filter.h"
 #include "zetton_inference/vision/tracking/bytetrack/lapjv.h"
 #include "zetton_inference/vision/tracking/bytetrack/s_track.h"

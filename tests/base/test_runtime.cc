@@ -1,8 +1,8 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-#include "zetton_inference/base/runtime.h"
-#include "zetton_inference/util/runtime_util.h"
+#include "zetton_inference/core/runtime/runtime.h"
+#include "zetton_inference/core/runtime/util.h"
 
 using namespace zetton::inference;
 

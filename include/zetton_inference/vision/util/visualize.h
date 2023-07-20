@@ -2,7 +2,7 @@
 
 #include <opencv2/core.hpp>
 
-#include "zetton_inference/vision/base/result.h"
+#include "zetton_inference/vision/common/result.h"
 
 namespace zetton {
 namespace inference {

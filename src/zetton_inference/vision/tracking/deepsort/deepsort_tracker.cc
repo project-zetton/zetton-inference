@@ -3,7 +3,7 @@
 #include <cstddef>
 
 #include "zetton_common/log/log.h"
-#include "zetton_inference/vision/base/result.h"
+#include "zetton_inference/vision/common/result.h"
 #include "zetton_inference/vision/tracking/deepsort/hungarian.h"
 
 namespace zetton {
